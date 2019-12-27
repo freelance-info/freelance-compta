@@ -7,13 +7,13 @@ export default function AccountLedger() {
 
     const [cols, setCols] = useState([
             { code: 'date', label: 'Date', type: 'Date', required: true },
-            { code: 'ref', label: 'Réf. de la facture', type: 'Text', required: true },
-            { code: 'client', label: 'Client', type: 'Text', required: true },
+            { code: 'ref', label: 'Réf. de la facture', type: 'Text', required: false },
+            { code: 'client', label: 'Client', type: 'Text', required: false },
             { code: 'nature', label: 'Nature', type: 'Text', required: true },
-            { code: 'ht', label: 'Montant HT', type: 'Number', required: true },
+            { code: 'ht', label: 'Montant HT', type: 'Number', required: false },
             { code: 'ttc', label: 'Montant TTC', type: 'Number', required: true },
-            { code: 'tva', label: 'TVA', type: 'Number', required: true },
-            { code: 'mode', label: "Mode d'encaissement", type: 'Text', required: true },
+            { code: 'tva', label: 'TVA', type: 'Number', required: false },
+            { code: 'mode', label: "Mode d'encaissement", type: 'Text', required: false },
     ]);
     const [lines, setLines] = useState([
             { date: '2012-01-10', client: 'CGI', nature: 'Presta 10j', ht: 3000, ttc: 3300, tva: 300 },
@@ -28,26 +28,28 @@ export default function AccountLedger() {
 
     const [selectedLines, setSelectedLines] = useState([]);
 
-    const [error, setError] = useState({});
-
-    const color = 'brown';
+    const [errors, setErrors] = useState([]);
     
     const thead = cols.map((col, colNumber) => (<th key={`header-cell-${colNumber}`}>{ col.label }</th>));
     
     const tbody = lines.map((line, lineNumber) => {
-        const td = cols.map((col, colNumber) => (
-            <td key={`body-cell-${lineNumber}-${colNumber}`}>
-                <CellEdit 
-                    def={col}
-                    value={ line[col.code] } 
-                    onChange={ (val) => lineChange(setLines, setError, lineNumber, col, val) }>
-                </CellEdit>
-            </td>));
+        const td = cols.map((col, colNumber) => {
+            const errorMsg = getErrorMsg(lineNumber, errors, col);
+            return (
+                <td key={`body-cell-${lineNumber}-${colNumber}`} className={errorMsg ? 'error' : ''}>
+                    <CellEdit 
+                        def={col}
+                        value={ line[col.code] } 
+                        onChange={ (val) => lineChange(setLines, lineNumber, col, val) }>
+                    </CellEdit>
+                    { errorMsg || '' }
+                </td>)}
+            );
         return (
             <tr key={`body-line-${lineNumber}`}>
                 <td key={`body-check-${lineNumber}`}>
                     <Checkbox checked={ selectedLines.some(selectedLine => selectedLine === lineNumber) }
-                        onChange={event => select(setSelectedLines, lineNumber, event.target.checked) } />
+                        onChange={(e, { checked }) => select(setSelectedLines, lineNumber, checked) } />
                 </td>
                 { td }
             </tr>
@@ -55,16 +57,15 @@ export default function AccountLedger() {
     });
     
     const lastLine = cols.map((col, colNumber) => {
-        const errorMsg = error.lineNumber === -1 && col.code === error.col.code ? 
-            (<div className="ui bottom attached negative message small"><i className="icon exclamation"></i>Requis</div>) : '';
+        const errorMsg = getErrorMsg(-1, errors, col);
         return (
-            <td key={`lastLine-cell-${colNumber}`}>
+            <td key={`lastLine-cell-${colNumber}`} className={errorMsg ? 'error' : ''}>
                 <CellEdit 
                     def={col}
                     value={newLine[col.code]}
-                    onChange={ (val) => newLineChange(setNewLine, setError, col, val) }>
+                    onChange={ (val) => newLineChange(setNewLine, col, val) }>
                 </CellEdit>
-                { errorMsg }
+                { errorMsg || '' }
             </td>
         );
     });
@@ -78,12 +79,12 @@ export default function AccountLedger() {
     
     return (
     <section>
-        <table color={color} key={color} className="ui table small compact">
+        <table className="ui table small compact brown">
             <thead>
                 <tr>
                     <th key={`header-check`}>
                         <Checkbox checked={ selectedLines.length === lines.length } 
-                            onChange={event => selectAll(setSelectedLines, lines, event.target.checked) } />
+                            onChange={(e, { checked }) => selectAll(setSelectedLines, lines, checked) } />
                     </th>
                     { thead }
                 </tr>
@@ -94,8 +95,14 @@ export default function AccountLedger() {
             <tfoot>
                 <tr>
                     <th colSpan={cols.length + 1}>
-                        <button className="ui icon button" onClick={() => addLine(setLines, setNewLine, setError, newLine, cols)}>
-                            <i aria-hidden="true" className="plus icon"></i>
+                        <button className="ui icon button primary" onClick={() => addLine(setLines, setNewLine, newLine)}>
+                            <i aria-hidden="true" className="plus icon"></i> Nouvelle ligne
+                        </button>
+                        <button disabled={selectedLines.length === 0} className="ui icon button red" onClick={() => removeLines(setLines, setSelectedLines, selectedLines)}>
+                            <i aria-hidden="true" className="trash icon"></i> Supprimer les lignes
+                        </button>
+                        <button className="ui icon button green" onClick={() => save(setLines, lines, cols, newLine, setNewLine, setErrors)}>
+                            <i aria-hidden="true" className="disk icon"></i> Enregistrer
                         </button>
                     </th>
                 </tr>
@@ -105,43 +112,30 @@ export default function AccountLedger() {
     );
 }
 
-function lineChange(setLines, setError, lineNumber, col, val) {
-    if (col.required && !val) {
-        setError(() => ({ lineNumber, col }));
-    } else {
-        setLines(prevLines => {
-            const newLines = [...prevLines];
-            newLines[lineNumber][col.code] = val;
-            return newLines;
-        });
-    }
+function lineChange(setLines, lineNumber, col, val) {
+    setLines(prevLines => {
+        const newLines = [...prevLines];
+        newLines[lineNumber][col.code] = val;
+        return newLines;
+    });
 }
 
 
-function newLineChange(setNewLine, setError, col, val) {
-    if (col.required && !val) {
-        setError(() => ({ lineNumber: -1, col }));
-    } else {
-        setNewLine(prevNewLine => {
-            const newLine = {...prevNewLine};
-            newLine[col.code] = val;
-            return newLine;
-        });
-    }
+function newLineChange(setNewLine, col, val) {
+    setNewLine(prevNewLine => {
+        const newLine = {...prevNewLine};
+        newLine[col.code] = val;
+        return newLine;
+    });
 }
 
-function addLine(setLines, setNewLine, setError, newLine, cols) {
-    const invalids = cols.filter(col => col.required && !newLine[col.code]);
-    if (invalids.length === 0) {
-        setLines(prevLines => {
-            const newLines = [...prevLines];
-            newLines.push({...newLine});
-            setNewLine(() => ({}));
-            return newLines;
-        });
-    } else {
-        setError(() => ({ lineNumber: -1, col: invalids[0] }));
-    }
+function addLine(setLines, setNewLine, newLine) {
+    setLines(prevLines => {
+        const newLines = [...prevLines];
+        newLines.push({...newLine});
+        setNewLine(() => ({}));
+        return newLines;
+    });
 }
 
 function selectAll(setSelectedLines, lines, checked) {
@@ -157,8 +151,62 @@ function select(setSelectedLines, lineNumber, checked) {
             newSelectedLines.push(lineNumber);
         } else {
             const idx = newSelectedLines.findIndex(selectedLine => selectedLine === lineNumber);
-            newSelectedLines = newSelectedLines.splice(idx, 1);
+           newSelectedLines.splice(idx, 1);
         }
         return newSelectedLines;
     });
+}
+
+function removeLines(setLines, setSelectedLines, selectedLines) {
+    setLines(prevLines => {
+        let newLines = [...prevLines];
+        selectedLines.forEach(index => newLines.splice(index, 1));
+        setSelectedLines(() => []);
+        return newLines;
+    });
+}
+
+// Write values to file
+function save(setLines, lines, cols, newLine, setNewLine, setErrors) {
+
+    // Check error on every existing lines
+    const errors = lines.map((line, lineNumber) => validateLine(line, lineNumber, cols))
+        .filter(error => error.cols.length > 0);
+
+    // Check error on new line if dirty
+    const isNewLineDirty = cols.some(col => !!newLine[col.code]);
+    if (isNewLineDirty) {
+        const newLineError = validateLine(newLine, -1, cols);
+        if (newLineError.cols.length > 0) {
+            errors.push(newLineError);
+        }
+    }
+
+    // Perform save action if no error
+    if (errors.length === 0) {
+        // If new line was dirty, add it to lines and add another new one
+        const linesToSave = [...lines];
+        if (isNewLineDirty) {
+            linesToSave.push(newLine);
+            addLine(setLines, setNewLine, newLine, cols);
+        }
+        console.log('saved!');
+    } else {
+        setErrors(() => errors);
+    }
+}
+
+// Return error object if any for given line
+function validateLine(line, lineNumber, cols) {
+    return {
+        lineNumber,
+        cols: cols.filter(col => col.required && !line[col.code])
+    };
+}
+
+// Return error message to display if any for given line / column
+function getErrorMsg(lineNumber, errors, col) {
+    const error = errors.filter(err => err.lineNumber === lineNumber);
+    return error.length === 0 ? undefined : error[0].cols.some(errorCol => col.code === errorCol.code) ?
+        (<i className="icon attention" title="Obligatoire"></i>) : '';
 }

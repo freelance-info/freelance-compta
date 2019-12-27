@@ -40,19 +40,19 @@ export default function Invoices() {
     ]);
 
     const color = 'blue';
-    const thead = cols.map((col, colNumber) => (<Table.HeaderCell key={`header-cell-${colNumber}`}>{ col.label }</Table.HeaderCell>));
+    const thead = cols.map((col, colNumber) => (<th key={`header-cell-${colNumber}`}>{ col.label }</th>));
     const tbody = lines.map((line, lineNumber) => {
-        const td = cols.map((col, colNumber) => (<Table.Cell key={`body-cell-${lineNumber}-${colNumber}`}>{ line[col.code] }</Table.Cell>));
-        return (<Table.Row key={`body-row-${lineNumber}`}>{ td }</Table.Row>);
+        const td = cols.map((col, colNumber) => (<td key={`body-cell-${lineNumber}-${colNumber}`}>{ line[col.code] }</td>));
+        return (<tr key={`body-row-${lineNumber}`}>{ td }</tr>);
     });
-    const tfoot = cols.map((col, colNumber) => (<Table.Cell key={`footer-cell-${colNumber}`}><div className="ui input"><input type="text" placeholder={ col.label } /></div></Table.Cell>));
-    tbody.push((<Table.Row key={`footer`}>{ tfoot }</Table.Row>));
+    const tfoot = cols.map((col, colNumber) => (<td key={`footer-cell-${colNumber}`}><div className="ui input"><input type="text" placeholder={ col.label } /></div></td>));
+    tbody.push((<tr key={`footer`}>{ tfoot }</tr>));
     return (
-    <Table color={color} key={color}>
-        <Table.Header><Table.Row>{ thead }</Table.Row></Table.Header>
-        <Table.Body>
+    <table className="ui table small compact blue">
+        <thead><tr>{ thead }</tr></thead>
+        <tbody>
             { tbody }
-        </Table.Body>
-    </Table>
+        </tbody>
+    </table>
     );
 }

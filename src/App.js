@@ -8,7 +8,7 @@ import { Tab } from 'semantic-ui-react';
 function App() {
 
   const panes = [
-    { menuItem: 'Livre des recettes', render: () => <Tab.Pane><AccountLedger></AccountLedger> </Tab.Pane> },
+    { menuItem: 'Livre des recettes', render: () => <Tab.Pane style={{overflowX: 'auto'}}><AccountLedger></AccountLedger> </Tab.Pane> },
     { menuItem: 'Factures', render: () => <Tab.Pane><Invoices></Invoices> </Tab.Pane> },
     { menuItem: 'Clients', render: () => <Tab.Pane>Clients</Tab.Pane> },
   ]
