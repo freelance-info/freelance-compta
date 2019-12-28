@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
 import { Checkbox } from 'semantic-ui-react';
 import CellEdit from './CellEdit';
+import { writeData } from '../helpers/csv';
+const remote = window.require('electron').remote;
 
 // Livre des recettes
 export default function AccountLedger() {
 
     const [cols, setCols] = useState([
-            { code: 'date', label: 'Date', type: 'Date', required: true },
-            { code: 'ref', label: 'Réf. de la facture', type: 'Text', required: false },
-            { code: 'client', label: 'Client', type: 'Text', required: false },
-            { code: 'nature', label: 'Nature', type: 'Text', required: true },
-            { code: 'ht', label: 'Montant HT', type: 'Number', required: false },
-            { code: 'ttc', label: 'Montant TTC', type: 'Number', required: true },
-            { code: 'tva', label: 'TVA', type: 'Number', required: false },
-            { code: 'mode', label: "Mode d'encaissement", type: 'Text', required: false },
+            { id: 'date', title: 'Date', type: 'Date', required: true },
+            { id: 'ref', title: 'Réf. de la facture', type: 'Text', required: false },
+            { id: 'client', title: 'Client', type: 'Text', required: false },
+            { id: 'nature', title: 'Nature', type: 'Text', required: true },
+            { id: 'ht', title: 'Montant HT', type: 'Number', required: false },
+            { id: 'ttc', title: 'Montant TTC', type: 'Number', required: true },
+            { id: 'tva', title: 'TVA', type: 'Number', required: false },
+            { id: 'mode', title: "Mode d'encaissement", type: 'Text', required: false },
     ]);
     const [lines, setLines] = useState([
             { date: '2012-01-10', client: 'CGI', nature: 'Presta 10j', ht: 3000, ttc: 3300, tva: 300 },
@@ -30,7 +32,7 @@ export default function AccountLedger() {
 
     const [errors, setErrors] = useState([]);
     
-    const thead = cols.map((col, colNumber) => (<th key={`header-cell-${colNumber}`}>{ col.label }</th>));
+    const thead = cols.map((col, colNumber) => (<th key={`header-cell-${colNumber}`}>{ col.title }</th>));
     
     const tbody = lines.map((line, lineNumber) => {
         const td = cols.map((col, colNumber) => {
@@ -39,7 +41,7 @@ export default function AccountLedger() {
                 <td key={`body-cell-${lineNumber}-${colNumber}`} className={errorMsg ? 'error' : ''}>
                     <CellEdit 
                         def={col}
-                        value={ line[col.code] } 
+                        value={ line[col.id] } 
                         onChange={ (val) => lineChange(setLines, lineNumber, col, val) }>
                     </CellEdit>
                     { errorMsg || '' }
@@ -62,7 +64,7 @@ export default function AccountLedger() {
             <td key={`lastLine-cell-${colNumber}`} className={errorMsg ? 'error' : ''}>
                 <CellEdit 
                     def={col}
-                    value={newLine[col.code]}
+                    value={newLine[col.id]}
                     onChange={ (val) => newLineChange(setNewLine, col, val) }>
                 </CellEdit>
                 { errorMsg || '' }
@@ -115,7 +117,7 @@ export default function AccountLedger() {
 function lineChange(setLines, lineNumber, col, val) {
     setLines(prevLines => {
         const newLines = [...prevLines];
-        newLines[lineNumber][col.code] = val;
+        newLines[lineNumber][col.id] = val;
         return newLines;
     });
 }
@@ -124,7 +126,7 @@ function lineChange(setLines, lineNumber, col, val) {
 function newLineChange(setNewLine, col, val) {
     setNewLine(prevNewLine => {
         const newLine = {...prevNewLine};
-        newLine[col.code] = val;
+        newLine[col.id] = val;
         return newLine;
     });
 }
@@ -174,7 +176,7 @@ function save(setLines, lines, cols, newLine, setNewLine, setErrors) {
         .filter(error => error.cols.length > 0);
 
     // Check error on new line if dirty
-    const isNewLineDirty = cols.some(col => !!newLine[col.code]);
+    const isNewLineDirty = cols.some(col => !!newLine[col.id]);
     if (isNewLineDirty) {
         const newLineError = validateLine(newLine, -1, cols);
         if (newLineError.cols.length > 0) {
@@ -190,7 +192,18 @@ function save(setLines, lines, cols, newLine, setNewLine, setErrors) {
             linesToSave.push(newLine);
             addLine(setLines, setNewLine, newLine, cols);
         }
-        console.log('saved!');
+
+        const filePath = remote.dialog.showSaveDialogSync(remote.getCurrentWindow(), {
+            title: 'Sauvegarde du livre de recette',
+            filters: [{
+                name: 'csv',
+                defaultPath: 'livre-de-recette.csv',
+                extensions: ['csv']
+            }]
+        });
+        if (filePath) { // if user cancelled, filePath is undefined
+            writeData(filePath, cols, lines);
+        }
     } else {
         setErrors(() => errors);
     }
@@ -200,13 +213,13 @@ function save(setLines, lines, cols, newLine, setNewLine, setErrors) {
 function validateLine(line, lineNumber, cols) {
     return {
         lineNumber,
-        cols: cols.filter(col => col.required && !line[col.code])
+        cols: cols.filter(col => col.required && !line[col.id])
     };
 }
 
 // Return error message to display if any for given line / column
 function getErrorMsg(lineNumber, errors, col) {
     const error = errors.filter(err => err.lineNumber === lineNumber);
-    return error.length === 0 ? undefined : error[0].cols.some(errorCol => col.code === errorCol.code) ?
+    return error.length === 0 ? undefined : error[0].cols.some(errorCol => col.id === errorCol.id) ?
         (<i className="icon attention" title="Obligatoire"></i>) : '';
 }
