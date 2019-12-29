@@ -1,32 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Checkbox } from 'semantic-ui-react';
 import CellEdit from './CellEdit';
-import { writeData } from '../helpers/csv';
+import { writeData, readData } from '../helpers/csv';
+import { findByLabelText } from '@testing-library/react';
 const remote = window.require('electron').remote;
 
 // Livre des recettes
 export default function AccountLedger() {
 
-    const [cols, setCols] = useState([
+    const [cols, _setCols] = useState([
             { id: 'date', title: 'Date', type: 'Date', required: true },
-            { id: 'ref', title: 'Réf. de la facture', type: 'Text', required: false },
-            { id: 'client', title: 'Client', type: 'Text', required: false },
-            { id: 'nature', title: 'Nature', type: 'Text', required: true },
-            { id: 'ht', title: 'Montant HT', type: 'Number', required: false },
-            { id: 'ttc', title: 'Montant TTC', type: 'Number', required: true },
-            { id: 'tva', title: 'TVA', type: 'Number', required: false },
-            { id: 'mode', title: "Mode d'encaissement", type: 'Text', required: false },
-    ]);
-    const [lines, setLines] = useState([
-            { date: '2012-01-10', client: 'CGI', nature: 'Presta 10j', ht: 3000, ttc: 3300, tva: 300 },
-            { date: '2012-01-20', client: 'CGI', nature: 'Presta 8j', ht: 2000, ttc: 2300, tva: 300 },
-            { date: '2012-02-10', client: 'Capgemini', nature: 'Forfait 10j', ht: 3050, ttc: 3350, tva: 300 },
-            { date: '2012-02-22', client: 'Capgemini', nature: 'Presta 3j', ht: 4000, ttc: 4300, tva: 300 },
-            { date: '2012-02-30', client: 'Capgemini', nature: 'Presta 5j', ht: 1000, ttc: 1200, tva: 200 },
-            { date: '2012-03-10', client: 'Accenture', nature: 'Presta 11j', ht: 800, ttc: 900, tva: 100 },
+            { id: 'ref', title: 'Réf. de la facture', type: 'Text', required: false, width: '75px' },
+            { id: 'client', title: 'Client', type: 'Text', required: false, width: '150px' },
+            { id: 'nature', title: 'Nature', type: 'Text', required: true, width: '200px' },
+            { id: 'ht', title: 'Montant HT', type: 'Number', required: false, width: '100px' },
+            { id: 'ttc', title: 'Montant TTC', type: 'Number', required: true, width: '100px' },
+            { id: 'tva', title: 'TVA', type: 'Number', required: false, width: '75px' },
+            { id: 'mode', title: "Mode d'encaissement", type: 'Text', required: false, width: '75px' },
     ]);
 
-    const [newLine, setNewLine] = useState({});
+    const [lines, setLines] = useState([]);
+    const defaultPath = localStorage.getItem('accountLedger');
+    
+    useEffect(() => {
+        if (defaultPath && lines.length === 0) {
+            readData(defaultPath, cols).then(readLines => setLines(readLines));
+        }
+    });
 
     const [selectedLines, setSelectedLines] = useState([]);
 
@@ -58,54 +58,42 @@ export default function AccountLedger() {
         );
     });
     
-    const lastLine = cols.map((col, colNumber) => {
-        const errorMsg = getErrorMsg(-1, errors, col);
-        return (
-            <td key={`lastLine-cell-${colNumber}`} className={errorMsg ? 'error' : ''}>
-                <CellEdit 
-                    def={col}
-                    value={newLine[col.id]}
-                    onChange={ (val) => newLineChange(setNewLine, col, val) }>
-                </CellEdit>
-                { errorMsg || '' }
-            </td>
-        );
-    });
-    
-    tbody.push((
-        <tr key={`lastLine`}>
-            <td></td>
-            { lastLine }
-        </tr>
-    ));
-    
     return (
     <section>
         <table className="ui table small compact brown">
             <thead>
                 <tr>
                     <th key={`header-check`}>
-                        <Checkbox checked={ selectedLines.length === lines.length } 
-                            onChange={(e, { checked }) => selectAll(setSelectedLines, lines, checked) } />
+                        <Checkbox checked={ selectedLines.length > 0 && selectedLines.length === lines.length } 
+                            onChange={(_e, { checked }) => selectAll(setSelectedLines, lines, checked) } />
                     </th>
                     { thead }
                 </tr>
             </thead>
             <tbody>
-                { tbody }
+                { tbody } 
             </tbody>
             <tfoot>
                 <tr>
                     <th colSpan={cols.length + 1}>
-                        <button className="ui icon button primary" onClick={() => addLine(setLines, setNewLine, newLine)}>
-                            <i aria-hidden="true" className="plus icon"></i> Nouvelle ligne
-                        </button>
-                        <button disabled={selectedLines.length === 0} className="ui icon button red" onClick={() => removeLines(setLines, setSelectedLines, selectedLines)}>
-                            <i aria-hidden="true" className="trash icon"></i> Supprimer les lignes
-                        </button>
-                        <button className="ui icon button green" onClick={() => save(setLines, lines, cols, newLine, setNewLine, setErrors)}>
-                            <i aria-hidden="true" className="disk icon"></i> Enregistrer
-                        </button>
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <div>
+                                <button className="ui icon button primary" onClick={() => addLine(setLines)}>
+                                    <i aria-hidden="true" className="plus icon"></i> Nouvelle ligne
+                                </button>
+                                <button disabled={selectedLines.length === 0} className="ui icon button red" onClick={() => removeLines(setLines, setSelectedLines, selectedLines)}>
+                                    <i aria-hidden="true" className="trash icon"></i> Supprimer les lignes
+                                </button>
+                            </div>
+                            <div>
+                                <button className="ui icon button green" onClick={() => open(setLines, cols)}>
+                                    <i aria-hidden="true" className="folder open icon"></i> Ouvrir
+                                </button>
+                                <button className="ui icon button green" onClick={() => save(setLines, lines, cols, setErrors)}>
+                                    <i aria-hidden="true" className="save icon"></i> Enregistrer
+                                </button>
+                            </div>
+                        </div>
                     </th>
                 </tr>
             </tfoot>
@@ -122,20 +110,11 @@ function lineChange(setLines, lineNumber, col, val) {
     });
 }
 
-
-function newLineChange(setNewLine, col, val) {
-    setNewLine(prevNewLine => {
-        const newLine = {...prevNewLine};
-        newLine[col.id] = val;
-        return newLine;
-    });
-}
-
-function addLine(setLines, setNewLine, newLine) {
+function addLine(setLines) {
     setLines(prevLines => {
         const newLines = [...prevLines];
-        newLines.push({...newLine});
-        setNewLine(() => ({}));
+        newLines.push({});
+        setTimeout(() => window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" }), 200);
         return newLines;
     });
 }
@@ -161,51 +140,58 @@ function select(setSelectedLines, lineNumber, checked) {
 
 function removeLines(setLines, setSelectedLines, selectedLines) {
     setLines(prevLines => {
-        let newLines = [...prevLines];
-        selectedLines.forEach(index => newLines.splice(index, 1));
+        let newLines = [];
+        prevLines.forEach((line, index) => {
+          if (!selectedLines.some(idx => index === idx)) {
+            newLines.push(line);
+          }
+        });
         setSelectedLines(() => []);
         return newLines;
     });
 }
 
-// Write values to file
-function save(setLines, lines, cols, newLine, setNewLine, setErrors) {
+// Write values to CSV file
+function save(setLines, lines, cols, setErrors) {
 
     // Check error on every existing lines
     const errors = lines.map((line, lineNumber) => validateLine(line, lineNumber, cols))
         .filter(error => error.cols.length > 0);
 
-    // Check error on new line if dirty
-    const isNewLineDirty = cols.some(col => !!newLine[col.id]);
-    if (isNewLineDirty) {
-        const newLineError = validateLine(newLine, -1, cols);
-        if (newLineError.cols.length > 0) {
-            errors.push(newLineError);
-        }
-    }
-
     // Perform save action if no error
     if (errors.length === 0) {
-        // If new line was dirty, add it to lines and add another new one
-        const linesToSave = [...lines];
-        if (isNewLineDirty) {
-            linesToSave.push(newLine);
-            addLine(setLines, setNewLine, newLine, cols);
-        }
 
         const filePath = remote.dialog.showSaveDialogSync(remote.getCurrentWindow(), {
             title: 'Sauvegarde du livre de recette',
             filters: [{
                 name: 'csv',
-                defaultPath: 'livre-de-recette.csv',
+                defaultPath: localStorage.getItem('accountLedger'),
                 extensions: ['csv']
             }]
         });
         if (filePath) { // if user cancelled, filePath is undefined
-            writeData(filePath, cols, lines);
+            writeData(filePath, cols, lines)
+                .then(_success => localStorage.setItem('accountLedger', filePath));
         }
     } else {
         setErrors(() => errors);
+    }
+}
+
+// Open CSV file
+function open(setLines, cols) {
+    const defaultPath = localStorage.getItem('accountLedger');
+    const filePath = remote.dialog.showOpenDialogSync(remote.getCurrentWindow(), {
+        title: 'Ouverture du livre de recette',
+        filters: [{
+            name: 'csv',
+            defaultPath,
+            extensions: ['csv'],
+        }]
+    });
+    if (filePath && filePath.length > 0) { // if user cancelled, filePath is undefined
+        readData(filePath[0], cols).then(readLines => setLines(readLines));
+        localStorage.setItem('accountLedger', filePath[0]);
     }
 }
 
