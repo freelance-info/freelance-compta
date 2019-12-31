@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Checkbox } from 'semantic-ui-react';
 import CellEdit from './CellEdit';
 import { writeData, readData } from '../helpers/csv';
-import { findByLabelText } from '@testing-library/react';
+import { sortByCol } from '../helpers/sort';
 const remote = window.require('electron').remote;
 
 // Livre des recettes
@@ -24,13 +24,14 @@ export default function AccountLedger() {
     
     useEffect(() => {
         if (defaultPath && lines.length === 0) {
-            readData(defaultPath, cols).then(readLines => setLines(readLines));
+            readData(defaultPath, cols).then(readLines => setLines(sortByCol(readLines, 'date')));
         }
     });
 
     const [selectedLines, setSelectedLines] = useState([]);
 
     const [errors, setErrors] = useState([]);
+    const [actionMessage, setActionMessage] = useState(undefined);
     
     const thead = cols.map((col, colNumber) => (<th key={`header-cell-${colNumber}`}>{ col.title }</th>));
     
@@ -57,6 +58,15 @@ export default function AccountLedger() {
             </tr>
         );
     });
+
+    const actionMessageDiv = actionMessage ? (
+        <div className={ 'ui message ' + actionMessage.type } style={{display : 'flex'}}>
+            <i className={(actionMessage.type === 'positive' ? 'check circle outline' : 'times circle outline') + ' icon'}></i>
+            <div className="content">
+                <div className="header">{ actionMessage.message }</div>
+            </div>
+        </div>
+    ) : undefined;
     
     return (
     <section>
@@ -85,11 +95,12 @@ export default function AccountLedger() {
                                     <i aria-hidden="true" className="trash icon"></i> Supprimer les lignes
                                 </button>
                             </div>
+                            { actionMessageDiv || '' }
                             <div>
                                 <button className="ui icon button green" onClick={() => open(setLines, cols)}>
                                     <i aria-hidden="true" className="folder open icon"></i> Ouvrir
                                 </button>
-                                <button className="ui icon button green" onClick={() => save(setLines, lines, cols, setErrors)}>
+                                <button className="ui icon button green" onClick={() => save(setLines, lines, cols, setErrors, setActionMessage)}>
                                     <i aria-hidden="true" className="save icon"></i> Enregistrer
                                 </button>
                             </div>
@@ -152,7 +163,7 @@ function removeLines(setLines, setSelectedLines, selectedLines) {
 }
 
 // Write values to CSV file
-function save(setLines, lines, cols, setErrors) {
+function save(setLines, lines, cols, setErrors, setActionMessage) {
 
     // Check error on every existing lines
     const errors = lines.map((line, lineNumber) => validateLine(line, lineNumber, cols))
@@ -170,11 +181,18 @@ function save(setLines, lines, cols, setErrors) {
             }]
         });
         if (filePath) { // if user cancelled, filePath is undefined
-            writeData(filePath, cols, lines)
-                .then(_success => localStorage.setItem('accountLedger', filePath));
+            const sortedLines = sortByCol(lines, 'date');
+            writeData(filePath, cols, sortedLines)
+                .then(_success => {
+                    localStorage.setItem('accountLedger', filePath);
+                    setLines(sortedLines);
+                    const now = new Date();
+                    setActionMessage({ type: 'positive', message: `Enregistrement effectué à ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}` });
+                });
         }
     } else {
         setErrors(() => errors);
+        setActionMessage({ type: 'negative', message: 'Enregistrement impossible, veuillez corriger les erreurs' })
     }
 }
 
