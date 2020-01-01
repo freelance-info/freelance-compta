@@ -14,7 +14,7 @@ function App() {
   ]
   
   return (
-    <main>
+    <main style={{ padding: '10px'}}>
       <Tab panes={panes} />
     </main>
   );

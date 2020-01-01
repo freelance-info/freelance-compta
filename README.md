@@ -1,12 +1,8 @@
 A faire :
 recettes:
-- tri par défaut
-- par défaut scroll bottom
-- header footer fixes
 - recherche
-- total
 - liste déroulante encaissement
-- paramétrage TVA
+- paramétrage TVA + calcul auto montant
 
 # Comptabilité pour Micro-Entreprise
 

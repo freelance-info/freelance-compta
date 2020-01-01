@@ -11,6 +11,8 @@ export function writeData(path, header, data) {
 
 export function readData(path, cols) {
 
+    const numberCols = cols.filter(col => col.type === 'Number');
+
     return new Promise((resolve, reject) => {
 
         const csvParser = window.require('csv-parser');
@@ -22,6 +24,11 @@ export function readData(path, cols) {
             .pipe(csvParser())
             .on('headers', (headers) => {})
             .on('data', (line) => {
+                numberCols.forEach(col => {
+                    if (line[col.id]) {
+                        line[col.id] = 1 * line[col.id];
+                    }
+                });
                 lines.push(line);
             })
             .on('end', () => {

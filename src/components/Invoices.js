@@ -48,11 +48,13 @@ export default function Invoices() {
     const tfoot = cols.map((col, colNumber) => (<td key={`footer-cell-${colNumber}`}><div className="ui input"><input type="text" placeholder={ col.label } /></div></td>));
     tbody.push((<tr key={`footer`}>{ tfoot }</tr>));
     return (
-    <table className="ui table small compact blue">
-        <thead><tr>{ thead }</tr></thead>
-        <tbody>
-            { tbody }
-        </tbody>
-    </table>
+    <article>
+        <table className="ui table small compact blue">
+            <thead><tr>{ thead }</tr></thead>
+            <tbody>
+                { tbody }
+            </tbody>
+        </table>
+    </article>
     );
 }

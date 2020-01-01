@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Checkbox } from 'semantic-ui-react';
+import { Button, Select, Input } from 'semantic-ui-react';
 import CellEdit from './CellEdit';
 import { writeData, readData } from '../helpers/csv';
 import { sortByCol } from '../helpers/sort';
+import { computeTotals } from '../helpers/computations';
 const remote = window.require('electron').remote;
 
 // Livre des recettes
@@ -20,11 +22,11 @@ export default function AccountLedger() {
     ]);
 
     const [lines, setLines] = useState([]);
-    const defaultPath = localStorage.getItem('accountLedger');
+    const currentFile = localStorage.getItem('accountLedger');
     
     useEffect(() => {
-        if (defaultPath && lines.length === 0) {
-            readData(defaultPath, cols).then(readLines => setLines(sortByCol(readLines, 'date')));
+        if (currentFile && lines.length === 0) {
+            readData(currentFile, cols).then(readLines => setLines(sortByCol(readLines, 'date')));
         }
     });
 
@@ -60,56 +62,84 @@ export default function AccountLedger() {
     });
 
     const actionMessageDiv = actionMessage ? (
-        <div className={ 'ui message ' + actionMessage.type } style={{display : 'flex'}}>
+        <div className={ 'ui message ' + actionMessage.type } style={{display : 'flex', marginTop: '0'}}>
             <i className={(actionMessage.type === 'positive' ? 'check circle outline' : 'times circle outline') + ' icon'}></i>
             <div className="content">
                 <div className="header">{ actionMessage.message }</div>
             </div>
         </div>
     ) : undefined;
+
+    const computedTotals = computeTotals(lines, cols);
+    const totals = cols.map(col => {
+        let total = computedTotals.get(col.id);
+        total = total ? total + '€' : '';
+        return (<th key={ `total-${col.id}` }>{ total }</th>)
+    });
+
+    const searchOptions = cols.map(col => ({ key: col.id, text: col.title, value: col.id }));
     
     return (
-    <section>
-        <table className="ui table small compact brown">
-            <thead>
-                <tr>
-                    <th key={`header-check`}>
-                        <Checkbox checked={ selectedLines.length > 0 && selectedLines.length === lines.length } 
-                            onChange={(_e, { checked }) => selectAll(setSelectedLines, lines, checked) } />
-                    </th>
-                    { thead }
-                </tr>
-            </thead>
-            <tbody>
-                { tbody } 
-            </tbody>
-            <tfoot>
-                <tr>
-                    <th colSpan={cols.length + 1}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <div>
-                                <button className="ui icon button primary" onClick={() => addLine(setLines)}>
-                                    <i aria-hidden="true" className="plus icon"></i> Nouvelle ligne
-                                </button>
-                                <button disabled={selectedLines.length === 0} className="ui icon button red" onClick={() => removeLines(setLines, setSelectedLines, selectedLines)}>
-                                    <i aria-hidden="true" className="trash icon"></i> Supprimer les lignes
-                                </button>
-                            </div>
-                            { actionMessageDiv || '' }
-                            <div>
-                                <button className="ui icon button green" onClick={() => open(setLines, cols)}>
-                                    <i aria-hidden="true" className="folder open icon"></i> Ouvrir
-                                </button>
-                                <button className="ui icon button green" onClick={() => save(setLines, lines, cols, setErrors, setActionMessage)}>
-                                    <i aria-hidden="true" className="save icon"></i> Enregistrer
-                                </button>
-                            </div>
-                        </div>
-                    </th>
-                </tr>
-            </tfoot>
-        </table>
-    </section>
+    <article>
+        <section style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '14px', borderBottom: '1px solid rgb(212, 212, 213)' }}>
+            <div>               
+                <button className="ui icon button green" 
+                        onClick={() => open(setLines, cols)}
+                        title="Ouvrir">
+                    <i aria-hidden="true" className="folder open icon"></i>
+                </button>
+                <button className="ui icon button green"
+                        onClick={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => saveAs(setLines, lines, cols, setActionMessage))}
+                        title="Enregistrer sous">
+                    <i aria-hidden="true" className="copy icon"></i>
+                </button>
+                <button className="ui icon button green"
+                        onClick={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => save(currentFile, setLines, lines, cols, setActionMessage))}
+                        title="Enregistrer">
+                    <i aria-hidden="true" className="save icon"></i>
+                </button>
+                <div className="tag ui teal label">{ currentFile }</div>
+            </div>
+            { actionMessageDiv || '' }
+            <Input type="text" placeholder="Rechercher..." action>
+                <input />
+                <Select compact options={ searchOptions } defaultValue={ cols[0].id } />
+                <Button type="submit"><i aria-hidden="true" className="search icon"></i></Button>
+            </Input>
+        </section>
+        <section id="ledger-scrollable-container" style={{maxHeight: '75vh', overflow: 'auto'}}>
+            <table className="ui table small compact brown">
+                <thead>
+                    <tr>
+                        <th key={`header-check`}>
+                            <Checkbox checked={ selectedLines.length > 0 && selectedLines.length === lines.length } 
+                                onChange={(_e, { checked }) => selectAll(setSelectedLines, lines, checked) } />
+                        </th>
+                        { thead }
+                    </tr>
+                </thead>
+                <tbody>
+                    { tbody } 
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th></th>
+                        { totals }
+                    </tr>
+                </tfoot>
+            </table>
+        </section>
+        <section style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '14px', borderTop: '1px solid rgb(212, 212, 213)' }}>
+            <div>
+                <button className="ui icon button primary" onClick={() => addLine(setLines)}>
+                    <i aria-hidden="true" className="plus icon"></i> Nouvelle ligne
+                </button>
+                <button disabled={selectedLines.length === 0} className="ui icon button red" onClick={() => removeLines(setLines, setSelectedLines, selectedLines)}>
+                    <i aria-hidden="true" className="trash icon"></i> Supprimer les lignes
+                </button>
+            </div>
+        </section>
+    </article>
     );
 }
 
@@ -125,7 +155,12 @@ function addLine(setLines) {
     setLines(prevLines => {
         const newLines = [...prevLines];
         newLines.push({});
-        setTimeout(() => window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" }), 200);
+        setTimeout(() => {
+            // Scroll to bottom of the div to see new line
+            const scrollable = document.querySelector('#ledger-scrollable-container');
+            scrollable.scrollTop = scrollable.scrollHeight;
+            window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" });
+        }, 200);
         return newLines;
     });
 }
@@ -162,8 +197,38 @@ function removeLines(setLines, setSelectedLines, selectedLines) {
     });
 }
 
-// Write values to CSV file
-function save(setLines, lines, cols, setErrors, setActionMessage) {
+// Write values to new file
+function saveAs(setLines, lines, cols, setActionMessage) {
+    
+    const filePath = remote.dialog.showSaveDialogSync(remote.getCurrentWindow(), {
+        title: 'Sauvegarde du livre de recette',
+        filters: [{
+            name: 'csv',
+            defaultPath: localStorage.getItem('accountLedger'),
+            extensions: ['csv']
+        }]
+    });
+
+    if (filePath) { // if user cancelled, filePath is undefined
+        save(filePath, setLines, lines, cols, setActionMessage)
+            .then(() => localStorage.setItem('accountLedger', filePath));
+    }
+}
+
+// Write values to given file
+function save(filePath, setLines, lines, cols, setActionMessage) {
+
+    const sortedLines = sortByCol(lines, 'date');
+    return writeData(filePath, cols, sortedLines)
+        .then(_success => {
+            setLines(sortedLines);
+            const now = new Date();
+            setActionMessage({ type: 'positive', message: `Enregistrement effectué à ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}` });
+        });
+}
+
+// Write values to current file
+function checkErrorsThen(lines, cols, setErrors, setActionMessage, fn) {
 
     // Check error on every existing lines
     const errors = lines.map((line, lineNumber) => validateLine(line, lineNumber, cols))
@@ -171,25 +236,7 @@ function save(setLines, lines, cols, setErrors, setActionMessage) {
 
     // Perform save action if no error
     if (errors.length === 0) {
-
-        const filePath = remote.dialog.showSaveDialogSync(remote.getCurrentWindow(), {
-            title: 'Sauvegarde du livre de recette',
-            filters: [{
-                name: 'csv',
-                defaultPath: localStorage.getItem('accountLedger'),
-                extensions: ['csv']
-            }]
-        });
-        if (filePath) { // if user cancelled, filePath is undefined
-            const sortedLines = sortByCol(lines, 'date');
-            writeData(filePath, cols, sortedLines)
-                .then(_success => {
-                    localStorage.setItem('accountLedger', filePath);
-                    setLines(sortedLines);
-                    const now = new Date();
-                    setActionMessage({ type: 'positive', message: `Enregistrement effectué à ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}` });
-                });
-        }
+        fn();
     } else {
         setErrors(() => errors);
         setActionMessage({ type: 'negative', message: 'Enregistrement impossible, veuillez corriger les erreurs' })
