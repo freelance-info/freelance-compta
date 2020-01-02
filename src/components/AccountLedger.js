@@ -38,10 +38,11 @@ export default function AccountLedger() {
     const thead = cols.map((col, colNumber) => (<th key={`header-cell-${colNumber}`}>{ col.title }</th>));
     
     const tbody = lines.map((line, lineNumber) => {
-        const td = cols.map((col, colNumber) => {
+        const td = cols.map(col => {
+            const key = `body-cell-${lineNumber}-${col.id}`;
             const errorMsg = getErrorMsg(lineNumber, errors, col);
             return (
-                <td key={`body-cell-${lineNumber}-${colNumber}`} className={errorMsg ? 'error' : ''}>
+                <td key={key} id={key} className={errorMsg ? 'error' : ''}>
                     <CellEdit 
                         def={col}
                         value={ line[col.id] } 
@@ -77,6 +78,9 @@ export default function AccountLedger() {
         return (<th key={ `total-${col.id}` }>{ total }</th>)
     });
 
+    const [searchOption, setSearchOption] = useState(cols[0].id);
+    const [searchText, setSearchText] = useState(undefined);
+    const [searchResults, setSearchResults] = useState(undefined);
     const searchOptions = cols.map(col => ({ key: col.id, text: col.title, value: col.id }));
     
     return (
@@ -101,10 +105,10 @@ export default function AccountLedger() {
                 <div className="tag ui teal label">{ currentFile }</div>
             </div>
             { actionMessageDiv || '' }
-            <Input type="text" placeholder="Rechercher..." action>
+            <Input type="text" placeholder="Rechercher..." action onChange={(e, { value} ) => { setSearchText(value); setSearchResults(undefined); } }>
                 <input />
-                <Select compact options={ searchOptions } defaultValue={ cols[0].id } />
-                <Button type="submit"><i aria-hidden="true" className="search icon"></i></Button>
+                <Select compact options={ searchOptions } defaultValue={ cols[0].id } onChange={(e, { value} ) => { setSearchOption(value); setSearchResults(undefined); } } />
+                <Button onClick={ () => search(searchResults, setSearchResults, searchText, searchOption, lines) }><i aria-hidden="true" className="search icon"></i></Button>
             </Input>
         </section>
         <section id="ledger-scrollable-container" style={{maxHeight: '75vh', overflow: 'auto'}}>
@@ -273,4 +277,27 @@ function getErrorMsg(lineNumber, errors, col) {
     const error = errors.filter(err => err.lineNumber === lineNumber);
     return error.length === 0 ? undefined : error[0].cols.some(errorCol => col.id === errorCol.id) ?
         (<i className="icon attention" title="Obligatoire"></i>) : '';
+}
+
+// Search the given col for text, then scroll to it
+function search(searchResults, setSearchResults, searchText, searchColId, lines) {
+
+    if (!searchResults) {
+        const regexp = new RegExp(searchText, 'gi');
+        searchResults = [];
+        lines.forEach((line, index) => {
+            if (line[searchColId] && `${line[searchColId]}`.search(regexp) >= 0) {
+                searchResults.push(index);
+            }
+        });
+   }
+   if (searchResults.length > 0) {
+        const lineIndex = searchResults.shift();
+        const cell = document.querySelector(`#body-cell-${lineIndex}-${searchColId}`);
+        const scrollable = document.querySelector('#ledger-scrollable-container');
+        scrollable.scrollTop = cell.offsetTop;
+        document.querySelectorAll('input').forEach(input => input.style.backgroundColor = 'transparent');
+        cell.querySelector('input').style.backgroundColor = 'yellow';
+    }
+    setSearchResults(searchResults);
 }
