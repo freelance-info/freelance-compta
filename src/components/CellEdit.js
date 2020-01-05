@@ -1,4 +1,5 @@
 import React from 'react';
+import { Select } from 'semantic-ui-react';
 export default function CellEdit({def, value, onChange}) {
     let input;
     switch(def.type) {
@@ -20,6 +21,9 @@ export default function CellEdit({def, value, onChange}) {
             input = (<input type="date" required min="2000-01-01" max="2100-01-01" style={{width: '150px'}} 
                             placeholder={ def.title } value={ value || '' } 
                             onChange={ (event) => onChange(event.target.value) } />);
+            break;
+        case 'Select':
+            input = (<Select compact style={{width: def.width}} options={ def.options } value={ value } defaultValue={def.defaultValue} onChange={(_event, {value} ) => onChange(value) } />)
             break;
         default:
     }

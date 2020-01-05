@@ -1,6 +1,5 @@
 A faire :
 recettes:
-- recherche
 - liste déroulante encaissement
 - paramétrage TVA + calcul auto montant
 

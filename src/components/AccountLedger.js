@@ -1,29 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { Checkbox } from 'semantic-ui-react';
-import { Button, Select, Input } from 'semantic-ui-react';
+import { Checkbox, Button, Select, Input } from 'semantic-ui-react';
 import CellEdit from './CellEdit';
 import { writeData, readData } from '../helpers/csv';
 import { sortByCol } from '../helpers/sort';
 import { computeTotals } from '../helpers/computations';
+import { OPTIONS_CASHING, OPTIONS_TVA, PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA } from '../helpers/globals';
+import { scrollToBottom, scrollTo } from '../helpers/scroll';
 const remote = window.require('electron').remote;
 
 // Livre des recettes
-export default function AccountLedger() {
+export default function AccountLedger({parameters}) {
 
-    const [cols, _setCols] = useState([
-            { id: 'date', title: 'Date', type: 'Date', required: true },
-            { id: 'ref', title: 'Réf. de la facture', type: 'Text', required: false, width: '75px' },
-            { id: 'client', title: 'Client', type: 'Text', required: false, width: '150px' },
-            { id: 'nature', title: 'Nature', type: 'Text', required: true, width: '200px' },
-            { id: 'ht', title: 'Montant HT', type: 'Number', required: false, width: '100px' },
-            { id: 'ttc', title: 'Montant TTC', type: 'Number', required: true, width: '100px' },
-            { id: 'tva', title: 'TVA', type: 'Number', required: false, width: '75px' },
-            { id: 'mode', title: "Mode d'encaissement", type: 'Text', required: false, width: '75px' },
+    // Column metadata definition
+    const [cols, setCols] = useState([
+        { id: 'date', title: 'Date', type: 'Date', required: true },
+        { id: 'ref', title: 'Réf. de la facture', type: 'Text', required: false, width: '75px' },
+        { id: 'client', title: 'Client', type: 'Text', required: false, width: '150px' },
+        { id: 'nature', title: 'Nature', type: 'Text', required: true, width: '200px' },
+        { id: 'ht', title: 'Montant HT', type: 'Number', required: false, width: '100px' },
+        { id: 'ttc', title: 'Montant TTC', type: 'Number', required: true, width: '100px' },
+        { id: 'tva', title: 'TVA', type: 'Select', required: false, width: '75px', options: OPTIONS_TVA },
+        { id: 'mode', title: "Mode d'encaissement", type: 'Select', required: false, width: '100px', options: OPTIONS_CASHING },
     ]);
+    useEffect(() => {
+        setCols(prevCols => {
+            // Set default values from parameters
+            const newCols = [...prevCols];
+            const tvaIndex = newCols.findIndex(prevCol => prevCol.id === 'tva');
+            newCols[tvaIndex].defaultValue = parameters.get(PARAMETER_DEFAULT_TVA);
+            const modeIndex = newCols.findIndex(prevCol => prevCol.id === 'mode');
+            newCols[modeIndex].defaultValue = parameters.get(PARAMETER_DEFAULT_CASHING);
+            return newCols;
+        });
+    }, [parameters]);
 
+    // Read data from saved file
     const [lines, setLines] = useState([]);
     const currentFile = localStorage.getItem('accountLedger');
-    
     useEffect(() => {
         if (currentFile && lines.length === 0) {
             readData(currentFile, cols).then(readLines => setLines(sortByCol(readLines, 'date')));
@@ -63,7 +76,7 @@ export default function AccountLedger() {
     });
 
     const actionMessageDiv = actionMessage ? (
-        <div className={ 'ui message ' + actionMessage.type } style={{display : 'flex', marginTop: '0'}}>
+        <div className={ 'ui message ' + actionMessage.type } style={{display : 'flex', margin: '0'}}>
             <i className={(actionMessage.type === 'positive' ? 'check circle outline' : 'times circle outline') + ' icon'}></i>
             <div className="content">
                 <div className="header">{ actionMessage.message }</div>
@@ -85,7 +98,7 @@ export default function AccountLedger() {
     
     return (
     <article>
-        <section style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '14px', borderBottom: '1px solid rgb(212, 212, 213)' }}>
+        <section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '14px', borderBottom: '1px solid rgb(212, 212, 213)' }}>
             <div>               
                 <button className="ui icon button green" 
                         onClick={() => open(setLines, cols)}
@@ -159,12 +172,7 @@ function addLine(setLines) {
     setLines(prevLines => {
         const newLines = [...prevLines];
         newLines.push({});
-        setTimeout(() => {
-            // Scroll to bottom of the div to see new line
-            const scrollable = document.querySelector('#ledger-scrollable-container');
-            scrollable.scrollTop = scrollable.scrollHeight;
-            window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" });
-        }, 200);
+        setTimeout(() => scrollToBottom('#ledger-scrollable-container'), 200);
         return newLines;
     });
 }
@@ -243,7 +251,8 @@ function checkErrorsThen(lines, cols, setErrors, setActionMessage, fn) {
         fn();
     } else {
         setErrors(() => errors);
-        setActionMessage({ type: 'negative', message: 'Enregistrement impossible, veuillez corriger les erreurs' })
+        setActionMessage({ type: 'negative', message: 'Enregistrement impossible, veuillez corriger les erreurs' });
+        setTimeout(() => scrollTo('#ledger-scrollable-container', `#body-cell-${errors[0].lineNumber}-${cols[0].id}`), 200);
     }
 }
 
@@ -293,11 +302,10 @@ function search(searchResults, setSearchResults, searchText, searchColId, lines)
    }
    if (searchResults.length > 0) {
         const lineIndex = searchResults.shift();
-        const cell = document.querySelector(`#body-cell-${lineIndex}-${searchColId}`);
-        const scrollable = document.querySelector('#ledger-scrollable-container');
-        scrollable.scrollTop = cell.offsetTop;
+        const cellId = `#body-cell-${lineIndex}-${searchColId}`;
+        scrollTo('#ledger-scrollable-container', cellId);
         document.querySelectorAll('input').forEach(input => input.style.backgroundColor = 'transparent');
-        cell.querySelector('input').style.backgroundColor = 'yellow';
+        document.querySelector(cellId).querySelector('input').style.backgroundColor = 'yellow';
     }
     setSearchResults(searchResults);
 }
