@@ -1,7 +1,17 @@
 A faire :
-recettes:
-- liste déroulante encaissement
-- paramétrage TVA + calcul auto montant
+factures: 
+ - formulaire consultation
+ - création / modif
+ - suppression
+ - impression pdf
+ - sélection depuis livre des recettes
+ - ajout client depuis liste
+ - type de presta depuis liste
+ - prix unitaire par type de presta
+achats:
+ - idem ledger avec ajout facture scanné
+timesheet:
+ - calendrier avec type presta et client
 
 # Comptabilité pour Micro-Entreprise
 

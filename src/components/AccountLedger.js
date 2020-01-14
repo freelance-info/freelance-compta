@@ -132,7 +132,7 @@ export default function AccountLedger({parameters}) {
                 <Button onClick={ () => search(searchResults, setSearchResults, searchText, searchOption, lines) }><i aria-hidden="true" className="search icon"></i></Button>
             </Input>
         </section>
-        <section id="ledger-scrollable-container" style={{maxHeight: '75vh', overflow: 'auto'}}>
+        <section id="ledger-scrollable-container" style={{ height: '75vh', overflow: 'auto'}}>
             <table className="ui table small compact brown">
                 <thead>
                     <tr>
@@ -156,7 +156,7 @@ export default function AccountLedger({parameters}) {
         </section>
         <section style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '14px', borderTop: '1px solid rgb(212, 212, 213)' }}>
             <div>
-                <button className="ui icon button primary" onClick={() => addLine(setLines)}>
+                <button className="ui icon button primary" onClick={() => addLine(setLines, cols)}>
                     <i aria-hidden="true" className="plus icon"></i> Nouvelle ligne
                 </button>
                 <button disabled={selectedLines.length === 0} className="ui icon button red" onClick={() => removeLines(setLines, setSelectedLines, selectedLines)}>
@@ -172,14 +172,20 @@ function lineChange(setLines, lineNumber, col, val) {
     setLines(prevLines => {
         const newLines = [...prevLines];
         newLines[lineNumber][col.id] = val;
+        if (col.id === 'ht') {
+            const tva = newLines[lineNumber]['tva'] / 100;
+            newLines[lineNumber]['ttc'] = Math.round(val * (1 + tva) * 100) / 100;
+        }
         return newLines;
     });
 }
 
-function addLine(setLines) {
+function addLine(setLines, cols) {
     setLines(prevLines => {
         const newLines = [...prevLines];
-        newLines.push({});
+        const newLine = {};
+        cols.forEach(col => newLine[col.id] = col.defaultValue);
+        newLines.push(newLine);
         setTimeout(() => scrollToBottom('#ledger-scrollable-container'), 200);
         return newLines;
     });
