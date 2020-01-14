@@ -23,7 +23,7 @@ export default function CellEdit({def, value, onChange}) {
                             onChange={ (event) => onChange(event.target.value) } />);
             break;
         case 'Select':
-            input = (<Select compact style={{width: def.width}} options={ def.options } value={ value } defaultValue={def.defaultValue} onChange={(_event, {value} ) => onChange(value) } />)
+            input = (<Select compact style={{width: def.width}} options={ def.options } value={ value ? value : def.defaultValue } onChange={(_event, {value} ) => onChange(value) } />)
             break;
         default:
     }

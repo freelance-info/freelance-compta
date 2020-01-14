@@ -36,12 +36,20 @@ export default function AccountLedger({parameters}) {
 
     // Read data from saved file
     const [lines, setLines] = useState([]);
-    const currentFile = localStorage.getItem('accountLedger');
+    const storedCurrentFile = localStorage.getItem('accountLedger');
+    const [currentFile, setCurrentFile] = useState(undefined);
     useEffect(() => {
-        if (currentFile && lines.length === 0) {
+        if (!currentFile) {
+            if (storedCurrentFile) {
+                setCurrentFile(storedCurrentFile);
+            }
+        } else {
+            if (currentFile !== storedCurrentFile) {
+                localStorage.setItem('accountLedger', currentFile);
+            }
             readData(currentFile, cols).then(readLines => setLines(sortByCol(readLines, 'date')));
         }
-    });
+    }, [currentFile]);
 
     const [selectedLines, setSelectedLines] = useState([]);
 
@@ -101,12 +109,12 @@ export default function AccountLedger({parameters}) {
         <section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '14px', borderBottom: '1px solid rgb(212, 212, 213)' }}>
             <div>               
                 <button className="ui icon button green" 
-                        onClick={() => open(setLines, cols)}
+                        onClick={() => open(currentFile, setCurrentFile, setLines, cols)}
                         title="Ouvrir">
                     <i aria-hidden="true" className="folder open icon"></i>
                 </button>
                 <button className="ui icon button green"
-                        onClick={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => saveAs(setLines, lines, cols, setActionMessage))}
+                        onClick={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => saveAs(currentFile, setCurrentFile, setLines, lines, cols, setActionMessage))}
                         title="Enregistrer sous">
                     <i aria-hidden="true" className="copy icon"></i>
                 </button>
@@ -210,20 +218,20 @@ function removeLines(setLines, setSelectedLines, selectedLines) {
 }
 
 // Write values to new file
-function saveAs(setLines, lines, cols, setActionMessage) {
+function saveAs(currentFile, setCurrentFile, setLines, lines, cols, setActionMessage) {
     
     const filePath = remote.dialog.showSaveDialogSync(remote.getCurrentWindow(), {
         title: 'Sauvegarde du livre de recette',
         filters: [{
             name: 'csv',
-            defaultPath: localStorage.getItem('accountLedger'),
+            defaultPath: currentFile,
             extensions: ['csv']
         }]
     });
 
     if (filePath) { // if user cancelled, filePath is undefined
         save(filePath, setLines, lines, cols, setActionMessage)
-            .then(() => localStorage.setItem('accountLedger', filePath));
+            .then(() => setCurrentFile(filePath));
     }
 }
 
@@ -248,6 +256,8 @@ function checkErrorsThen(lines, cols, setErrors, setActionMessage, fn) {
 
     // Perform save action if no error
     if (errors.length === 0) {
+        setErrors(() => []);
+        setActionMessage(undefined);
         fn();
     } else {
         setErrors(() => errors);
@@ -257,8 +267,8 @@ function checkErrorsThen(lines, cols, setErrors, setActionMessage, fn) {
 }
 
 // Open CSV file
-function open(setLines, cols) {
-    const defaultPath = localStorage.getItem('accountLedger');
+function open(currentFile, setCurrentFile, setLines, cols) {
+    const defaultPath = currentFile;
     const filePath = remote.dialog.showOpenDialogSync(remote.getCurrentWindow(), {
         title: 'Ouverture du livre de recette',
         filters: [{
@@ -269,7 +279,7 @@ function open(setLines, cols) {
     });
     if (filePath && filePath.length > 0) { // if user cancelled, filePath is undefined
         readData(filePath[0], cols).then(readLines => setLines(readLines));
-        localStorage.setItem('accountLedger', filePath[0]);
+        setCurrentFile(filePath[0]);
     }
 }
 
