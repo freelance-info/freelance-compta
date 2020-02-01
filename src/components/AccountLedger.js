@@ -9,7 +9,7 @@ import { scrollToBottom, scrollTo } from '../helpers/scroll';
 const remote = window.require('electron').remote;
 
 // Livre des recettes
-export default function AccountLedger({parameters}) {
+export default function AccountLedger({parameters, fileChange}) {
 
     // Column metadata definition
     const [cols, setCols] = useState([
@@ -42,6 +42,7 @@ export default function AccountLedger({parameters}) {
         if (!currentFile) {
             if (storedCurrentFile) {
                 setCurrentFile(storedCurrentFile);
+                fileChange(storedCurrentFile);
             }
         } else {
             if (currentFile !== storedCurrentFile) {
@@ -109,12 +110,12 @@ export default function AccountLedger({parameters}) {
         <section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '14px', borderBottom: '1px solid rgb(212, 212, 213)' }}>
             <div>               
                 <button className="ui icon button green" 
-                        onClick={() => open(currentFile, setCurrentFile, setLines, cols)}
+                        onClick={() => open(currentFile, setCurrentFile, fileChange, setLines, cols)}
                         title="Ouvrir">
                     <i aria-hidden="true" className="folder open icon"></i>
                 </button>
                 <button className="ui icon button green"
-                        onClick={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => saveAs(currentFile, setCurrentFile, setLines, lines, cols, setActionMessage))}
+                        onClick={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => saveAs(currentFile, setCurrentFile, fileChange, setLines, lines, cols, setActionMessage))}
                         title="Enregistrer sous">
                     <i aria-hidden="true" className="copy icon"></i>
                 </button>
@@ -123,7 +124,6 @@ export default function AccountLedger({parameters}) {
                         title="Enregistrer">
                     <i aria-hidden="true" className="save icon"></i>
                 </button>
-                <div className="tag ui teal label">{ currentFile }</div>
             </div>
             { actionMessageDiv || '' }
             <Input type="text" placeholder="Rechercher..." action onChange={(e, { value} ) => { setSearchText(value); setSearchResults(undefined); } }>
@@ -224,7 +224,7 @@ function removeLines(setLines, setSelectedLines, selectedLines) {
 }
 
 // Write values to new file
-function saveAs(currentFile, setCurrentFile, setLines, lines, cols, setActionMessage) {
+function saveAs(currentFile, setCurrentFile, fileChange, setLines, lines, cols, setActionMessage) {
     
     const filePath = remote.dialog.showSaveDialogSync(remote.getCurrentWindow(), {
         title: 'Sauvegarde du livre de recette',
@@ -237,7 +237,10 @@ function saveAs(currentFile, setCurrentFile, setLines, lines, cols, setActionMes
 
     if (filePath) { // if user cancelled, filePath is undefined
         save(filePath, setLines, lines, cols, setActionMessage)
-            .then(() => setCurrentFile(filePath));
+            .then(() => { 
+                setCurrentFile(filePath);
+                fileChange(filePath);
+            });
     }
 }
 
@@ -273,7 +276,7 @@ function checkErrorsThen(lines, cols, setErrors, setActionMessage, fn) {
 }
 
 // Open CSV file
-function open(currentFile, setCurrentFile, setLines, cols) {
+function open(currentFile, setCurrentFile, fileChange, setLines, cols) {
     const defaultPath = currentFile;
     const filePath = remote.dialog.showOpenDialogSync(remote.getCurrentWindow(), {
         title: 'Ouverture du livre de recette',
@@ -286,6 +289,7 @@ function open(currentFile, setCurrentFile, setLines, cols) {
     if (filePath && filePath.length > 0) { // if user cancelled, filePath is undefined
         readData(filePath[0], cols).then(readLines => setLines(readLines));
         setCurrentFile(filePath[0]);
+        fileChange(filePath[0]);
     }
 }
 

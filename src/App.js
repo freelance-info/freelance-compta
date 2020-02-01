@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import logo from './logo.svg';
 import AccountLedger from './components/AccountLedger';
-import Invoices from './components/Invoices';
 import Parameters from './components/Parameters';
 import { Tab } from 'semantic-ui-react';
 import { PARAMETER_KEYS, PARAMETER_ENTREPRISE_NAME } from './helpers/globals';
@@ -13,6 +12,7 @@ function App() {
   // Initialize parameters
   const [parameters, setParameters] = useState(new Map());
   const [showParam, setShowParam] = useState(false);
+  const [tabFiles, setTabFiles] = useState([]);
   useEffect(() => {
     if (parameters.size === 0) {
       // Try to load from local storage
@@ -41,10 +41,19 @@ function App() {
   }, [parameters]);
 
   // Tabs
+  const displayableTabFiles = tabFiles.map(tabFile => tabFile.replace(/^.*[\\\/]/, ''));
   const panes = [
-    { menuItem: 'Livre des recettes', render: () => <Tab.Pane style={{overflowX: 'auto'}}><AccountLedger parameters={parameters}></AccountLedger> </Tab.Pane> },
-    { menuItem: 'Factures', render: () => <Tab.Pane><Invoices></Invoices> </Tab.Pane> },
-    { menuItem: 'Clients', render: () => <Tab.Pane>Clients</Tab.Pane> },
+    { menuItem: displayableTabFiles[0], render: () => 
+      (
+        <Tab.Pane style={{overflowX: 'auto'}}>
+          <AccountLedger parameters={parameters} fileChange={filePath => setTabFiles(prev => {
+            const newTabFiles = [...prev]; 
+            newTabFiles[0] = filePath; 
+            return newTabFiles;
+          }) }></AccountLedger>
+        </Tab.Pane> 
+      )
+    },
   ];
   
   return (

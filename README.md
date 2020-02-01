@@ -1,13 +1,7 @@
 A faire :
-factures: 
- - formulaire consultation
- - création / modif
- - suppression
- - impression pdf
- - sélection depuis livre des recettes
- - ajout client depuis liste
- - type de presta depuis liste
- - prix unitaire par type de presta
+recettes: 
+ - pouvoir dupliquer une ligne
+ - surligner les nouvelles lignes pour les retrouver facilement qd elles sont retriées
 achats:
  - idem ledger avec ajout facture scanné
 timesheet:
