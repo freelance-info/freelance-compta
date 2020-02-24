@@ -1,3 +1,11 @@
+import { sortByCol } from './sort';
+
+let remote;
+if (process.env.REACT_APP_MODE === 'electron') {
+    remote = window.require('electron').remote;
+}
+
+
 export function writeData(path, header, data) {
 
     const createCsvWriter = window.require('csv-writer').createObjectCsvWriter;
@@ -36,3 +44,59 @@ export function readData(path, cols) {
             });
     });
 }
+
+
+
+// Write values to new file
+export function saveAs(currentFile, setCurrentFile, fileChange, setLines, lines, cols, setActionMessage) {
+    
+    const filePath = remote.dialog.showSaveDialogSync(remote.getCurrentWindow(), {
+        title: 'Sauvegarde du livre de recette',
+        filters: [{
+            name: 'csv',
+            defaultPath: currentFile,
+            extensions: ['csv']
+        }]
+    });
+
+    if (filePath) { // if user cancelled, filePath is undefined
+        save(filePath, setLines, lines, cols, setActionMessage)
+            .then(() => { 
+                setCurrentFile(filePath);
+                fileChange(filePath);
+            });
+    }
+}
+
+
+// Open CSV file
+export function open(currentFile, setCurrentFile, fileChange, setLines, cols) {
+    const defaultPath = currentFile;
+    const filePath = remote.dialog.showOpenDialogSync(remote.getCurrentWindow(), {
+        title: 'Ouverture du livre de recette',
+        filters: [{
+            name: 'csv',
+            defaultPath,
+            extensions: ['csv'],
+        }]
+    });
+    if (filePath && filePath.length > 0) { // if user cancelled, filePath is undefined
+        readData(filePath[0], cols).then(readLines => setLines(readLines));
+        setCurrentFile(filePath[0]);
+        fileChange(filePath[0]);
+    }
+}
+
+
+// Write values to given file
+export function save(filePath, setLines, lines, cols, setActionMessage) {
+
+    const sortedLines = sortByCol(lines, 'date');
+    return writeData(filePath, cols, sortedLines)
+        .then(_success => {
+            setLines(sortedLines);
+            const now = new Date();
+            setActionMessage({ type: 'positive', message: `Enregistrement effectué à ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}` });
+        });
+}
+

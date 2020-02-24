@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Checkbox, Button, Select, Input } from 'semantic-ui-react';
 import CellEdit from './CellEdit';
-import { writeData, readData } from '../helpers/csv';
+import { open, saveAs, save, readData } from '../helpers/csv';
 import { sortByCol } from '../helpers/sort';
 import { computeTotals } from '../helpers/computations';
 import { OPTIONS_CASHING, OPTIONS_TVA, PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA } from '../helpers/globals';
 import { scrollToBottom, scrollTo } from '../helpers/scroll';
-const remote = window.require('electron').remote;
 
 // Livre des recettes
 export default function AccountLedger({parameters, fileChange}) {
@@ -223,39 +222,6 @@ function removeLines(setLines, setSelectedLines, selectedLines) {
     });
 }
 
-// Write values to new file
-function saveAs(currentFile, setCurrentFile, fileChange, setLines, lines, cols, setActionMessage) {
-    
-    const filePath = remote.dialog.showSaveDialogSync(remote.getCurrentWindow(), {
-        title: 'Sauvegarde du livre de recette',
-        filters: [{
-            name: 'csv',
-            defaultPath: currentFile,
-            extensions: ['csv']
-        }]
-    });
-
-    if (filePath) { // if user cancelled, filePath is undefined
-        save(filePath, setLines, lines, cols, setActionMessage)
-            .then(() => { 
-                setCurrentFile(filePath);
-                fileChange(filePath);
-            });
-    }
-}
-
-// Write values to given file
-function save(filePath, setLines, lines, cols, setActionMessage) {
-
-    const sortedLines = sortByCol(lines, 'date');
-    return writeData(filePath, cols, sortedLines)
-        .then(_success => {
-            setLines(sortedLines);
-            const now = new Date();
-            setActionMessage({ type: 'positive', message: `Enregistrement effectué à ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}` });
-        });
-}
-
 // Write values to current file
 function checkErrorsThen(lines, cols, setErrors, setActionMessage, fn) {
 
@@ -272,24 +238,6 @@ function checkErrorsThen(lines, cols, setErrors, setActionMessage, fn) {
         setErrors(() => errors);
         setActionMessage({ type: 'negative', message: 'Enregistrement impossible, veuillez corriger les erreurs' });
         setTimeout(() => scrollTo('#ledger-scrollable-container', `#body-cell-${errors[0].lineNumber}-${cols[0].id}`), 200);
-    }
-}
-
-// Open CSV file
-function open(currentFile, setCurrentFile, fileChange, setLines, cols) {
-    const defaultPath = currentFile;
-    const filePath = remote.dialog.showOpenDialogSync(remote.getCurrentWindow(), {
-        title: 'Ouverture du livre de recette',
-        filters: [{
-            name: 'csv',
-            defaultPath,
-            extensions: ['csv'],
-        }]
-    });
-    if (filePath && filePath.length > 0) { // if user cancelled, filePath is undefined
-        readData(filePath[0], cols).then(readLines => setLines(readLines));
-        setCurrentFile(filePath[0]);
-        fileChange(filePath[0]);
     }
 }
 

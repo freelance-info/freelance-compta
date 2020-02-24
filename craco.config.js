@@ -1,9 +1,13 @@
-// Required to use 'fs' module without ejecting create-react-app config
-// https://github.com/facebook/create-react-app/issues/6782 
+let target = 'web';
+if (process.env.REACT_APP_MODE === 'electron') {
+  target = 'electron-renderer'
+}
+console.log(`craco.config.js: setting webpack target to: ${target}`);
+
 module.exports = {
     webpack: {
         configure: {
-            target: 'electron-renderer'
+            target: target
         }
     }
 };
