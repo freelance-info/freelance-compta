@@ -55,6 +55,8 @@ Selon votre volume d'activité, c'est vous qui choisissez comment découper vos 
 
 # Développement
 
+## En local
+
 1. Installer [les pré-requis Python pour node-gyp](https://github.com/nodejs/node-gyp#Installation).
 
 Exemple pour Windows : depuis un terminal en admin 
@@ -67,6 +69,11 @@ npm install --global --production windows-build-tools
 
 3. `npm run start` : lance en parallèle le front React (pour le livereload) et la fenêtre Electron 
 
+## Packaging
+
+1. `npm run build:electron`: création des fichiers javascript de production
+
+2. `npm dist` : création des exécutable d'installation
 
 ## Philosophie
 

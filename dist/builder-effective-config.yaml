@@ -6,5 +6,6 @@ files:
       - build/**/*
 extraMetadata:
   main: build/electron.js
+artifactName: '${productName}.${ext}'
 extends: react-cra
 electronVersion: 7.1.11

@@ -1,8 +1,8 @@
 version: 0.1.1
 files:
-  - url: compta-Setup-0.1.1.exe
-    sha512: eQI5O2iKi028vsP9KhJwDnv4C36Q5Jzu37IoA86yRfwdGOXyyTxyVkYQOHuPQxwx+n+zQTk3zt3/3AYNDP/QEw==
-    size: 71395679
-path: compta-Setup-0.1.1.exe
-sha512: eQI5O2iKi028vsP9KhJwDnv4C36Q5Jzu37IoA86yRfwdGOXyyTxyVkYQOHuPQxwx+n+zQTk3zt3/3AYNDP/QEw==
-releaseDate: '2020-02-01T20:23:09.216Z'
+  - url: compta.exe
+    sha512: 8jZEjTLZ4fI68k+ffCZmFCZmqdZLF2c7By4Tcm9d5Cex7At9+FSME79e9Vq2P8QVkZrdqPmDFGMz6SaLTv4Tng==
+    size: 71696418
+path: compta.exe
+sha512: 8jZEjTLZ4fI68k+ffCZmFCZmqdZLF2c7By4Tcm9d5Cex7At9+FSME79e9Vq2P8QVkZrdqPmDFGMz6SaLTv4Tng==
+releaseDate: '2020-02-24T21:40:37.248Z'
