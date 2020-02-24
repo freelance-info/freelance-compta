@@ -1,9 +1,7 @@
 A faire :
 - packaging electron : 
-  - finir test windows
   - test linux
   - test mac 
-- instruction d'install dans doc
 - capture d'écran dans doc
 recettes: 
  - pouvoir dupliquer une ligne
@@ -22,8 +20,7 @@ Idéal pour les développeur freelance qui souhaitent une base simple (**React.j
 
 # Quick start
 
-Télécharger et exécuter l'installeur : ...
-Le logiciel est préchargé avec un exemple de facture et de client, à supprimer bien sûr.
+Télécharger et exécuter l'installeur electron-builder/dist/compta.exe
 
 # Documentation utilisateur
 
