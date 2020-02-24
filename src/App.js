@@ -5,16 +5,20 @@ import Parameters from './components/Parameters';
 import { Tab } from 'semantic-ui-react';
 import { PARAMETER_KEYS, PARAMETER_ENTREPRISE_NAME } from './helpers/globals';
 
+class App extends React.Component {
 
+  constructor(props) {
+    super(props);
+    // Initialize parameters
+    this.state = {
+      parameters: new Map(),
+      showParam: false,
+      tabFiles:[],
+    };
+  }
 
-function App() {
-
-  // Initialize parameters
-  const [parameters, setParameters] = useState(new Map());
-  const [showParam, setShowParam] = useState(false);
-  const [tabFiles, setTabFiles] = useState([]);
-  useEffect(() => {
-    if (parameters.size === 0) {
+  componentDidMount() {
+    if (this.state.parameters.size === 0) {
       // Try to load from local storage
       const savedParameters = new Map();
       PARAMETER_KEYS.forEach(key => {
@@ -25,52 +29,56 @@ function App() {
       });
       if (savedParameters.size < PARAMETER_KEYS.length) {
         // If parameters are missing, open the parameter popup to force user to set them
-        setShowParam(true);
+        this.setState({showParam: true});
       }
-      setParameters(savedParameters);
-    }
-  }, [parameters]);
-
-  // Window title
-  useEffect(() => {
+      this.setState({parameters:savedParameters});
+    };
+  
+    // Window title
     let title = 'Comptabilité';
-    if (parameters.has(PARAMETER_ENTREPRISE_NAME)) {
-      title += ` de ${parameters.get(PARAMETER_ENTREPRISE_NAME)}`;
+    if (this.state.parameters.has(PARAMETER_ENTREPRISE_NAME)) {
+      title += ` de ${this.state.parameters.get(PARAMETER_ENTREPRISE_NAME)}`;
     }
     document.querySelector('title').innerText = title;
-  }, [parameters]);
+  }
+  render() {
 
-  // Tabs
-  const displayableTabFiles = tabFiles.map(tabFile => tabFile.replace(/^.*[\\\/]/, ''));
-  const panes = [
-    { menuItem: displayableTabFiles[0], render: () => 
-      (
-        <Tab.Pane style={{overflowX: 'auto'}}>
-          <AccountLedger parameters={parameters} fileChange={filePath => setTabFiles(prev => {
-            const newTabFiles = [...prev]; 
-            newTabFiles[0] = filePath; 
-            return newTabFiles;
-          }) }></AccountLedger>
-        </Tab.Pane> 
-      )
-    },
-  ];
-  
-  return (
-    <main style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
-      <button className="ui icon button gray" style={ {alignSelf: 'flex-end', marginBottom: '-35px' }} onClick={() => setShowParam(true)} title="Paramètres">
+    // Tabs
+    const displayableTabFiles = this.state.tabFiles.map(tabFile => tabFile.replace(/^.*[\\\/]/, ''));
+    const panes = [
+      {
+        menuItem: displayableTabFiles[0], render: () => {
+          return (
+            <Tab.Pane style={{ overflowX: 'auto' }}>
+              <AccountLedger parameters={this.state.parameters} fileChange={filePath => this.onTabFilesChange(filePath)}></AccountLedger>
+            </Tab.Pane>
+          );
+        }
+      },
+    ];
+
+    return (
+      <main style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
+        <button className="ui icon button gray" style={{ alignSelf: 'flex-end', marginBottom: '-35px' }} onClick={() => this.setState({showParam: true})} title="Paramètres">
           <i className="cog icon"></i>
-      </button>
-      <Parameters parameterKeys={PARAMETER_KEYS} initialParametersValue={parameters} open={showParam} close={(parametersValue) => onSaveParameters(setParameters, setShowParam, parametersValue) }></Parameters>
+        </button>
+      <Parameters parameterKeys={PARAMETER_KEYS} initialParametersValue={this.state.parameters} open={this.state.showParam} close={(parametersValue) => this.onSaveParameters(parametersValue) }></Parameters>
       <Tab panes={panes}></Tab>
-    </main>
-  );
-}
+      </main>
+    );
+  }
 
-function onSaveParameters(setParameters, setShowParam, parametersValue) {
-  setParameters(parametersValue);
-  PARAMETER_KEYS.forEach(parameterKey => localStorage.setItem(parameterKey, parametersValue.get(parameterKey)));
-  setShowParam(false);
+  onSaveParameters(parametersValue) {
+    this.setState({parameters:parametersValue});
+    PARAMETER_KEYS.forEach(parameterKey => localStorage.setItem(parameterKey, parametersValue.get(parameterKey)));
+    this.setState({showParam: false});
+  }
+
+  onTabFilesChange(filePath) {
+    const newTabFiles = [...this.state.tabFiles];
+    newTabFiles[0] = filePath;
+    this.setState({tabFiles: newTabFiles});
+  }
 }
 
 export default App;

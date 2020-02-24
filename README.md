@@ -1,7 +1,13 @@
 A faire :
+- packaging electron : 
+  - test linux
+  - test mac 
+- capture d'écran dans doc
 recettes: 
  - pouvoir dupliquer une ligne
  - surligner les nouvelles lignes pour les retrouver facilement qd elles sont retriées
+ - pouvoir référencer un fichier facture normé pour pré-remplir la date, le client et le n°.
+ - pouvoir afficher la liste de toutes les factures référencées.
 achats:
  - idem ledger avec ajout facture scanné
 timesheet:
@@ -9,13 +15,12 @@ timesheet:
 
 # Comptabilité pour Micro-Entreprise
 
-Logiciel de comptabilité et facturation minimal pour être **conforme à la réglementation française** des micro-entreprises.
+Logiciel de comptabilité minimal pour être **conforme à la réglementation française** des micro-entreprises.
 Idéal pour les développeur freelance qui souhaitent une base simple (**React.js**) à customiser.
 
 # Quick start
 
-Télécharger et exécuter l'installeur : ...
-Le logiciel est préchargé avec un exemple de facture et de client, à supprimer bien sûr.
+Télécharger et exécuter l'installeur electron-builder/dist/compta.exe
 
 # Documentation utilisateur
 
@@ -32,10 +37,11 @@ Il fonctionne de la même façon que le livre des recettes et comporte une séle
 
 ## 3ème obligation légale : les _Factures émises et reçues_ 
 
-Le modèle contient toutes les mentions légales minimales.
-Le formulaire propose une aide à la saisie pour la plupart des champs.
-L'export se fait sous forme d'un template .docx (Word, OpenOffice), donc modifiable par vos soins.
-Vous pouvez également joindre le scan d'une facture ou d'un ticket de caisse.
+Ce logiciel est fait pour fonctionner avec des factures émises de façon externes, par tout type de logiciel et notamment son cousin :
+https://github.com/freelance-info/factures
+
+Pour plus de souplesse, il se base sur un nommage des factures normé pour déduire la date, le client et le n° de facture.
+Chaque ligne comptable lié à une facture conservera une référence vers le chemin du fichier.
 
 ## Sauvegarde des données
 
@@ -45,10 +51,26 @@ Selon votre volume d'activité, c'est vous qui choisissez comment découper vos 
 
 
 # Développement
+
+## En local
+
+1. Installer [les pré-requis Python pour node-gyp](https://github.com/nodejs/node-gyp#Installation).
+
+Exemple pour Windows : depuis un terminal en admin 
+
 ```
-npm run start
-npm run electron
+npm install --global --production windows-build-tools
 ```
+
+2. Installer les dépendances : `npm install`
+
+3. `npm run start` : lance en parallèle le front React (pour le livereload) et la fenêtre Electron 
+
+## Packaging
+
+1. `npm run build:electron`: création des fichiers javascript de production
+
+2. `npm dist` : création des exécutable d'installation
 
 ## Philosophie
 

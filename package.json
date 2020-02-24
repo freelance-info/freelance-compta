@@ -1,6 +1,7 @@
 {
-  "name": "compta-micro-entreprise",
-  "version": "0.1.0",
+  "name": "compta",
+  "version": "0.1.1",
+  "homepage": "./",
   "private": true,
   "dependencies": {
     "@craco/craco": "^5.6.2",
@@ -9,36 +10,44 @@
     "@testing-library/user-event": "^7.1.2",
     "csv-parser": "^2.3.2",
     "csv-writer": "^1.5.0",
+    "env-cmd": "^10.0.1",
     "fs": "0.0.1-security",
+    "npm-watch": "^0.6.0",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-scripts": "3.3.0",
     "semantic-ui-css": "^2.4.1",
-    "semantic-ui-react": "^0.88.2"
+    "semantic-ui-react": "^0.88.2",
+    "typescript": "^3.7.5"
   },
   "scripts": {
-    "start": "craco start",
-    "build": "craco build",
-    "test": "craco test",
-    "electron": "electron ."
+    "start": "concurrently --kill-others \"env-cmd -f .env.electron craco start\" \"wait-on tcp:3000 && electron src/main.js\"",
+    "start:web": "env-cmd -f .env.web craco start",
+    "start:electron-react": "craco start",
+    "start:electron-dev": "wait-on tcp:3000 && electron src/main.js",
+    "build:web": "craco build",
+    "build:electron": "env-cmd -f .env.electron craco build",
+    "eject": "react-scripts eject",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
   "eslintConfig": {
     "extends": "react-app"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
   "devDependencies": {
-    "electron": "^7.1.7"
+    "concurrently": "^5.1.0",
+    "electron": "^7.1.11",
+    "electron-builder": "^22.3.2",
+    "wait-on": "^4.0.0"
   },
-  "main": "src/main.js"
+  "main": "electron.js",
+  "build": {
+    "artifactName": "${productName}.${ext}"
+  }
 }
