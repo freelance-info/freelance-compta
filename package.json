@@ -3,6 +3,10 @@
   "version": "0.1.1",
   "homepage": "./",
   "private": true,
+  "author": {
+    "name": "Benjamin CAURE",
+    "email": "benjamin.caure@gmail.com"
+  },
   "dependencies": {
     "@craco/craco": "^5.6.2",
     "@testing-library/jest-dom": "^4.2.4",
@@ -29,7 +33,8 @@
     "build:electron": "env-cmd -f .env.electron craco build",
     "eject": "react-scripts eject",
     "pack": "electron-builder --dir",
-    "dist:win-linux": "electron-builder --win --linux",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux",
     "dist:mac": "electron-builder --mac"
   },
   "eslintConfig": {
@@ -58,7 +63,7 @@
     "linux": {
       "target": "AppImage",
       "category": "Office",
-      "icon": "public/favicon.ico"
+      "icon": "public/logo.png"
     },
     "mac": {
       "target": "zip",
