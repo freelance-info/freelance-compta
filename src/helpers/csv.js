@@ -48,7 +48,7 @@ export function readData(path, cols) {
 
 
 // Write values to new file
-export function saveAs(currentFile, setCurrentFile, fileChange, setLines, lines, cols, setActionMessage) {
+export function saveAs(currentFile, setCurrentFile, fileChange, setLines, setHighlightedLines, setSelectedLines, lines, cols, setActionMessage) {
     
     const filePath = remote.dialog.showSaveDialogSync(remote.getCurrentWindow(), {
         title: 'Sauvegarde du livre de recette',
@@ -64,13 +64,15 @@ export function saveAs(currentFile, setCurrentFile, fileChange, setLines, lines,
             .then(() => { 
                 setCurrentFile(filePath);
                 fileChange(filePath);
+                setHighlightedLines([]);
+                setSelectedLines([]);
             });
     }
 }
 
 
 // Open CSV file
-export function open(currentFile, setCurrentFile, fileChange, setLines, cols) {
+export function open(currentFile, setCurrentFile, fileChange, setLines, setHighlightedLines, setSelectedLines, cols) {
     const defaultPath = currentFile;
     const filePath = remote.dialog.showOpenDialogSync(remote.getCurrentWindow(), {
         title: 'Ouverture du livre de recette',
@@ -82,6 +84,8 @@ export function open(currentFile, setCurrentFile, fileChange, setLines, cols) {
     });
     if (filePath && filePath.length > 0) { // if user cancelled, filePath is undefined
         readData(filePath[0], cols).then(readLines => setLines(readLines));
+        setHighlightedLines([]);
+        setSelectedLines([]);
         setCurrentFile(filePath[0]);
         fileChange(filePath[0]);
     }
@@ -89,12 +93,14 @@ export function open(currentFile, setCurrentFile, fileChange, setLines, cols) {
 
 
 // Write values to given file
-export function save(filePath, setLines, lines, cols, setActionMessage) {
+export function save(filePath, setLines, setHighlightedLines, setSelectedLines, lines, cols, setActionMessage) {
 
     const sortedLines = sortByCol(lines, 'date');
     return writeData(filePath, cols, sortedLines)
         .then(_success => {
             setLines(sortedLines);
+            setHighlightedLines(_prev => []);
+            setSelectedLines(_prev => []);
             const now = new Date();
             setActionMessage({ type: 'positive', message: `Enregistrement effectué à ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}` });
         });

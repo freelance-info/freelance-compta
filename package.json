@@ -29,7 +29,8 @@
     "build:electron": "env-cmd -f .env.electron craco build",
     "eject": "react-scripts eject",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist:win-linux": "electron-builder --win --linux",
+    "dist:mac": "electron-builder --mac"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -48,6 +49,21 @@
   },
   "main": "electron.js",
   "build": {
-    "artifactName": "${productName}.${ext}"
+    "artifactName": "${productName}.${ext}",
+    "win": {
+      "publisherName": "github.com/freelance-info",
+      "target": "portable",
+      "icon": "public/favicon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Office",
+      "icon": "public/favicon.ico"
+    },
+    "mac": {
+      "target": "zip",
+      "icon": "public/favicon.ico",
+      "category": "Finance"
+    }
   }
 }

@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Checkbox, Button, Select, Input } from 'semantic-ui-react';
 import CellEdit from './CellEdit';
 import { open, saveAs, save, readData } from '../helpers/csv';
+import { parseDate } from '../helpers/date';
 import { sortByCol } from '../helpers/sort';
 import { computeTotals } from '../helpers/computations';
 import { OPTIONS_CASHING, OPTIONS_TVA, PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA } from '../helpers/globals';
 import { scrollToBottom, scrollTo } from '../helpers/scroll';
 
 // Livre des recettes
-export default function AccountLedger({parameters, fileChange}) {
+export default function AccountLedger({parameters, fileChange}) {  
 
     // Column metadata definition
     const [cols, setCols] = useState([
@@ -40,23 +41,36 @@ export default function AccountLedger({parameters, fileChange}) {
     useEffect(() => {
         if (!currentFile) {
             if (storedCurrentFile) {
-                setCurrentFile(storedCurrentFile);
+                setCurrentFile(() => storedCurrentFile);
                 fileChange(storedCurrentFile);
             }
         } else {
             if (currentFile !== storedCurrentFile) {
                 localStorage.setItem('accountLedger', currentFile);
             }
-            readData(currentFile, cols).then(readLines => setLines(sortByCol(readLines, 'date')));
+            readData(currentFile, cols).then(readLines => {
+                setLines(() => sortByCol(readLines, 'date'));
+                setHighlightedLines(() => []);
+                setSelectedLines(() => []);
+            });
         }
     }, [currentFile]);
 
     const [selectedLines, setSelectedLines] = useState([]);
+    const [highlightedLines, setHighlightedLines] = useState([]);
+
+    const [sortState, setSortState] = useState({ column: 'date', direction: 'ascending', });
 
     const [errors, setErrors] = useState([]);
     const [actionMessage, setActionMessage] = useState(undefined);
     
-    const thead = cols.map((col, colNumber) => (<th key={`header-cell-${colNumber}`}>{ col.title }</th>));
+    const thead = cols.map((col, colNumber) => (
+        <th key={`header-cell-${colNumber}`}
+            onClick={ () => handleSort(col.id, sortState, setSortState, setLines) }
+            className={ sortState.column === col.id ? 'sorted ' + sortState.direction : 'sorted' }>
+                { col.title }
+        </th>
+    ));
     
     const tbody = lines.map((line, lineNumber) => {
         const td = cols.map(col => {
@@ -73,7 +87,8 @@ export default function AccountLedger({parameters, fileChange}) {
                 </td>)}
             );
         return (
-            <tr key={`body-line-${lineNumber}`}>
+            <tr key={`body-line-${lineNumber}`} 
+                className={ highlightedLines.includes(lineNumber) ? 'positive' : '' }>
                 <td key={`body-check-${lineNumber}`}>
                     <Checkbox checked={ selectedLines.some(selectedLine => selectedLine === lineNumber) }
                         onChange={(e, { checked }) => select(setSelectedLines, lineNumber, checked) } />
@@ -109,30 +124,30 @@ export default function AccountLedger({parameters, fileChange}) {
         <section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '14px', borderBottom: '1px solid rgb(212, 212, 213)' }}>
             <div>               
                 <button className="ui icon button green" 
-                        onClick={() => open(currentFile, setCurrentFile, fileChange, setLines, cols)}
+                        onClick={() => open(currentFile, setCurrentFile, fileChange, setLines, setHighlightedLines, setSelectedLines, cols)}
                         title="Ouvrir">
                     <i aria-hidden="true" className="folder open icon"></i>
                 </button>
                 <button className="ui icon button green"
-                        onClick={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => saveAs(currentFile, setCurrentFile, fileChange, setLines, lines, cols, setActionMessage))}
+                        onClick={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => saveAs(currentFile, setCurrentFile, fileChange, setLines, setHighlightedLines, setSelectedLines, lines, cols, setActionMessage))}
                         title="Enregistrer sous">
                     <i aria-hidden="true" className="copy icon"></i>
                 </button>
                 <button className="ui icon button green"
-                        onClick={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => save(currentFile, setLines, lines, cols, setActionMessage))}
+                        onClick={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => save(currentFile, setLines, setHighlightedLines, setSelectedLines, lines, cols, setActionMessage))}
                         title="Enregistrer">
                     <i aria-hidden="true" className="save icon"></i>
                 </button>
             </div>
             { actionMessageDiv || '' }
-            <Input type="text" placeholder="Rechercher..." action onChange={(e, { value} ) => { setSearchText(value); setSearchResults(undefined); } }>
+            <Input type="text" placeholder="Rechercher..." action onChange={(e, { value} ) => { setSearchText(value); setSearchResults([]); } }>
                 <input />
-                <Select compact options={ searchOptions } defaultValue={ cols[0].id } onChange={(e, { value} ) => { setSearchOption(value); setSearchResults(undefined); } } />
+                <Select compact options={ searchOptions } defaultValue={ cols[0].id } onChange={(e, { value} ) => { setSearchOption(value); setSearchResults([]); } } />
                 <Button onClick={ () => search(searchResults, setSearchResults, searchText, searchOption, lines) }><i aria-hidden="true" className="search icon"></i></Button>
             </Input>
         </section>
         <section id="ledger-scrollable-container" style={{ height: '75vh', overflow: 'auto'}}>
-            <table className="ui table small compact brown">
+            <table className="ui table small compact brown sortable">
                 <thead>
                     <tr>
                         <th key={`header-check`}>
@@ -155,11 +170,14 @@ export default function AccountLedger({parameters, fileChange}) {
         </section>
         <section style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '14px', borderTop: '1px solid rgb(212, 212, 213)' }}>
             <div>
-                <button className="ui icon button primary" onClick={() => addLine(setLines, cols)}>
+                <button className="ui icon button primary" onClick={() => addLine(setLines, setHighlightedLines, setSelectedLines, cols)}>
                     <i aria-hidden="true" className="plus icon"></i> Nouvelle ligne
                 </button>
                 <button disabled={selectedLines.length === 0} className="ui icon button red" onClick={() => removeLines(setLines, setSelectedLines, selectedLines)}>
                     <i aria-hidden="true" className="trash icon"></i> Supprimer les lignes
+                </button>
+                <button disabled={selectedLines.length === 0} className="ui icon button secondary" onClick={() => duplicateLines(setLines, setHighlightedLines, setSelectedLines, selectedLines)}>
+                    <i aria-hidden="true" className="copy icon"></i> Dupliquer les lignes
                 </button>
             </div>
         </section>
@@ -179,12 +197,15 @@ function lineChange(setLines, lineNumber, col, val) {
     });
 }
 
-function addLine(setLines, cols) {
+function addLine(setLines, setHighlightedLines, setSelectedLines, cols) {
+    let newLineIndex = -1;
     setLines(prevLines => {
         const newLines = [...prevLines];
         const newLine = {};
         cols.forEach(col => newLine[col.id] = col.defaultValue);
         newLines.push(newLine);
+        setHighlightedLines(prevLines => [...prevLines, newLines.length - 1]);
+        setSelectedLines([]);
         setTimeout(() => scrollToBottom('#ledger-scrollable-container'), 200);
         return newLines;
     });
@@ -210,6 +231,7 @@ function select(setSelectedLines, lineNumber, checked) {
 }
 
 function removeLines(setLines, setSelectedLines, selectedLines) {
+    
     setLines(prevLines => {
         let newLines = [];
         prevLines.forEach((line, index) => {
@@ -220,6 +242,23 @@ function removeLines(setLines, setSelectedLines, selectedLines) {
         setSelectedLines(() => []);
         return newLines;
     });
+}
+
+function duplicateLines(setLines, setHighlightedLines, setSelectedLines, selectedLines) {
+    const newHighlightedLines = [];
+    setLines(prevLines => {
+        let newLines = [...prevLines];
+        prevLines.forEach((line, index) => {
+          if (selectedLines.some(idx => index === idx)) {
+            const newLine = {...line};
+            newLines.push(newLine);
+            newHighlightedLines.push(newLines.length-1);
+          }
+        });
+        return newLines;
+    });
+    setHighlightedLines(prev => [...prev, ...newHighlightedLines]);
+    setSelectedLines([]);
 }
 
 // Write values to current file
@@ -259,8 +298,19 @@ function getErrorMsg(lineNumber, errors, col) {
 // Search the given col for text, then scroll to it
 function search(searchResults, setSearchResults, searchText, searchColId, lines) {
 
-    if (!searchResults) {
-        const regexp = new RegExp(searchText, 'gi');
+    let regexp = null;
+    if (searchColId.toLowerCase() === 'date') {
+        const normalizedDate = parseDate(searchText);
+        if (normalizedDate) {
+            const dateString = normalizedDate.toISOString().substr(0, 10);
+            regexp = new RegExp(dateString);
+        } else {
+            return;
+        }
+    } else {
+        regexp = new RegExp(searchText, 'gi');
+    }
+    if (searchResults.length === 0) {  
         searchResults = [];
         lines.forEach((line, index) => {
             if (line[searchColId] && `${line[searchColId]}`.search(regexp) >= 0) {
@@ -276,4 +326,30 @@ function search(searchResults, setSearchResults, searchText, searchColId, lines)
         document.querySelector(cellId).querySelector('input').style.backgroundColor = 'yellow';
     }
     setSearchResults(searchResults);
+}
+
+function handleSort(clickedColumn, sortState, setSortState, setLines) {
+    const { column, direction } = sortState;
+
+    if (column !== clickedColumn) {
+        setSortState({
+            column: clickedColumn,
+            direction: 'ascending',
+        });
+        setLines(prev => {
+            const newLines = [...prev];
+            newLines.sort((a, b) => a[clickedColumn] < b[clickedColumn]);
+            return newLines;
+        })
+    } else {
+        setSortState(() => ({
+            column,
+            direction: direction === 'ascending' ? 'descending' : 'ascending',
+        }));
+        setLines(prev => {
+            const newLines = [...prev];
+            newLines.reverse();
+            return newLines;
+        });
+    }
 }

@@ -1,12 +1,12 @@
 import React from 'react';
 
-import logoImage from './logo.svg';
+import logoImage from './logo.png';
 import classes from './Logo.module.css';
 
-const logo = (props) => (
+const Logo = (props) => (
     <div className={classes.Logo} onClick={props.clicked}>
-        <img src={logoImage} alt="React Logo" />
+        <img src={logoImage} alt="Logo" />
     </div>
 );
 
-export default logo;
+export default Logo;

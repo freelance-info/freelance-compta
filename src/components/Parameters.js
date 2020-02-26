@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Button, Select } from 'semantic-ui-react';
 import { PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA, OPTIONS_TVA, OPTIONS_CASHING } from '../helpers/globals';
+import Logo from '../Logo/Logo';
 
 export default function Parameters({ parameterKeys, initialParametersValue, open, close }) {
 
@@ -63,7 +64,9 @@ export default function Parameters({ parameterKeys, initialParametersValue, open
             open={open}
             closeOnEscape={false}
             closeOnDimmerClick={false}>
-            <Modal.Header>Paramètres généraux</Modal.Header>
+            <Modal.Header style={ { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }>
+                <span>Paramètres généraux</span><Logo></Logo>
+            </Modal.Header>
             <Modal.Content>
                 <Form>
                     {parameters}

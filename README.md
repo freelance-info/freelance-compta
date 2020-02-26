@@ -4,8 +4,9 @@ A faire :
   - test mac 
 - capture d'écran dans doc
 recettes: 
- - pouvoir dupliquer une ligne
- - surligner les nouvelles lignes pour les retrouver facilement qd elles sont retriées
+ - bug ouverture app avec fichier existant : aucune ligne ne s'affiche (parfois => console.log() tabFilesChange pour voir si 1er fichier poussé vide)
+ - indicateur modifs non sauvegardées
+ - annuler dernière action
  - pouvoir référencer un fichier facture normé pour pré-remplir la date, le client et le n°.
  - pouvoir afficher la liste de toutes les factures référencées.
 achats:
@@ -20,7 +21,17 @@ Idéal pour les développeur freelance qui souhaitent une base simple (**React.j
 
 # Quick start
 
-Télécharger et exécuter l'installeur electron-builder/dist/compta.exe
+## Windows
+
+Télécharger et décompresser la version portable electron-builder/dist/compta.exe
+
+## MacOS
+
+Télécharger et décompresser le zip 
+
+## Linux
+
+Télécharger et décompresser [l'AppImage](https://docs.appimage.org/introduction/quickstart.html#ref-quickstart)
 
 # Documentation utilisateur
 
@@ -70,7 +81,7 @@ npm install --global --production windows-build-tools
 
 1. `npm run build:electron`: création des fichiers javascript de production
 
-2. `npm dist` : création des exécutable d'installation
+2. `npm dist:win-linux` et `npm dist:mac` : création des exécutable d'installation
 
 ## Philosophie
 

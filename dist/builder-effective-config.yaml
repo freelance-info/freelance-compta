@@ -7,5 +7,17 @@ files:
 extraMetadata:
   main: build/electron.js
 artifactName: '${productName}.${ext}'
+win:
+  publisherName: github.com/freelance-info
+  target: portable
+  icon: public/favicon.ico
+linux:
+  target: AppImage
+  category: Office
+  icon: public/favicon.ico
+mac:
+  target: zip
+  icon: public/favicon.ico
+  category: Finance
 extends: react-cra
 electronVersion: 7.1.11

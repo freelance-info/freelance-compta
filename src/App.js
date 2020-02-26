@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
 import AccountLedger from './components/AccountLedger';
 import Parameters from './components/Parameters';
 import { Tab } from 'semantic-ui-react';
@@ -75,6 +74,7 @@ class App extends React.Component {
   }
 
   onTabFilesChange(filePath) {
+    console.log(`onTabFilesChange(${filePath})`)
     const newTabFiles = [...this.state.tabFiles];
     newTabFiles[0] = filePath;
     this.setState({tabFiles: newTabFiles});
