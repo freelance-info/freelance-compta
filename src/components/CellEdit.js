@@ -1,5 +1,13 @@
 import React from 'react';
 import { Select } from 'semantic-ui-react';
+import { func, object, node } from 'prop-types';
+
+CellEdit.propTypes = {
+    def: object.isRequired,
+    value: node, // number, string, date, array
+    onChange: func.isRequired
+};
+
 export default function CellEdit({def, value, onChange}) {
     let input;
     switch(def.type) {

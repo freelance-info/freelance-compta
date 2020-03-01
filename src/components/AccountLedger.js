@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { func, object } from 'prop-types';
 import { Checkbox, Button, Select, Input } from 'semantic-ui-react';
 import CellEdit from './CellEdit';
 import { open, saveAs, save, readData } from '../helpers/csv';
@@ -7,6 +8,11 @@ import { sortByCol } from '../helpers/sort';
 import { computeTotals } from '../helpers/computations';
 import { OPTIONS_CASHING, OPTIONS_TVA, PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA } from '../helpers/globals';
 import { scrollToBottom, scrollTo } from '../helpers/scroll';
+
+AccountLedger.propTypes = {
+    parameters: object.isRequired,
+    fileChange: func.isRequired
+}
 
 // Livre des recettes
 export default function AccountLedger({parameters, fileChange}) {  

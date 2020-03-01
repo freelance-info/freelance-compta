@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Button, Select } from 'semantic-ui-react';
+import { func, object, array, bool } from 'prop-types';
 import { PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA, OPTIONS_TVA, OPTIONS_CASHING } from '../helpers/globals';
 import Logo from '../Logo/Logo';
+
+Parameters.propTypes = {
+    parameterKeys: array.isRequired,
+    initialParametersValue: object.isRequired, // Map
+    open: bool.isRequired,
+    close: func.isRequired
+};
 
 export default function Parameters({ parameterKeys, initialParametersValue, open, close }) {
 
