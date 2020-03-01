@@ -6,14 +6,14 @@ import { PARAMETER_KEYS, PARAMETER_ENTREPRISE_NAME } from './helpers/globals';
 
 class App extends React.Component {
 
+  state = {
+    parameters: new Map(),
+    showParam: false,
+    tabFiles:[],
+  };
+
   constructor(props) {
     super(props);
-    // Initialize parameters
-    this.state = {
-      parameters: new Map(),
-      showParam: false,
-      tabFiles:[],
-    };
   }
 
   componentDidMount() {
@@ -49,7 +49,7 @@ class App extends React.Component {
         menuItem: displayableTabFiles[0], render: () => {
           return (
             <Tab.Pane style={{ overflowX: 'auto' }}>
-              <AccountLedger parameters={this.state.parameters} fileChange={filePath => this.onTabFilesChange(filePath)}></AccountLedger>
+              <AccountLedger parameters={this.state.parameters} fileChange={this.onTabFilesChange}></AccountLedger>
             </Tab.Pane>
           );
         }
@@ -57,28 +57,31 @@ class App extends React.Component {
     ];
 
     return (
-      <main style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
-        <button className="ui icon button gray" style={{ alignSelf: 'flex-end', marginBottom: '-35px' }} onClick={() => this.setState({showParam: true})} title="Paramètres">
+      <main style={ { padding: '10px', display: 'flex', flexDirection: 'column' } }>
+        <button className="ui icon button gray" style={ { alignSelf: 'flex-end', marginBottom: '-35px' } } onClick={() => this.setState({showParam: true})} title="Paramètres">
           <i className="cog icon"></i>
         </button>
-      <Parameters parameterKeys={PARAMETER_KEYS} initialParametersValue={this.state.parameters} open={this.state.showParam} close={(parametersValue) => this.onSaveParameters(parametersValue) }></Parameters>
-      <Tab panes={panes}></Tab>
+      <Parameters parameterKeys={ PARAMETER_KEYS } initialParametersValue={ this.state.parameters } open={ this.state.showParam } close={ this.onSaveParameters }></Parameters>
+      <Tab panes={ panes }></Tab>
       </main>
     );
   }
 
-  onSaveParameters(parametersValue) {
+  onSaveParameters = (parametersValue) => {
     this.setState({parameters:parametersValue});
     PARAMETER_KEYS.forEach(parameterKey => localStorage.setItem(parameterKey, parametersValue.get(parameterKey)));
     this.setState({showParam: false});
-  }
+  };
 
-  onTabFilesChange(filePath) {
+  onTabFilesChange = (filePath) => {
     console.log(`onTabFilesChange(${filePath})`)
-    const newTabFiles = [...this.state.tabFiles];
-    newTabFiles[0] = filePath;
-    this.setState({tabFiles: newTabFiles});
-  }
+    
+    this.setState(prevState => {
+      const newTabFiles = [...prevState.tabFiles];
+      newTabFiles[0] = filePath;
+      return {tabFiles: newTabFiles};
+    });
+  };
 }
 
 export default App;
