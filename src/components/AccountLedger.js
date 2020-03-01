@@ -8,6 +8,7 @@ import { sortByCol } from '../helpers/sort';
 import { computeTotals } from '../helpers/computations';
 import { OPTIONS_CASHING, OPTIONS_TVA, PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA } from '../helpers/globals';
 import { scrollToBottom, scrollTo } from '../helpers/scroll';
+import Message from './Message';
 
 AccountLedger.propTypes = {
     parameters: object.isRequired,
@@ -104,15 +105,6 @@ export default function AccountLedger({parameters, fileChange}) {
         );
     });
 
-    const actionMessageDiv = actionMessage ? (
-        <div className={ 'ui message ' + actionMessage.type } style={{display : 'flex', margin: '0'}}>
-            <i className={(actionMessage.type === 'positive' ? 'check circle outline' : 'times circle outline') + ' icon'}></i>
-            <div className="content">
-                <div className="header">{ actionMessage.message }</div>
-            </div>
-        </div>
-    ) : undefined;
-
     const computedTotals = computeTotals(lines, cols);
     const totals = cols.map(col => {
         let total = computedTotals.get(col.id);
@@ -145,7 +137,7 @@ export default function AccountLedger({parameters, fileChange}) {
                     <i aria-hidden="true" className="save icon"></i>
                 </button>
             </div>
-            { actionMessageDiv || '' }
+            { actionMessage && <Message {...actionMessage}></Message> }
             <Input type="text" placeholder="Rechercher..." action onChange={(e, { value} ) => { setSearchText(value); setSearchResults([]); } }>
                 <input />
                 <Select compact options={ searchOptions } defaultValue={ cols[0].id } onChange={(e, { value} ) => { setSearchOption(value); setSearchResults([]); } } />
