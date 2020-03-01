@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { func, object } from 'prop-types';
-import { Checkbox, Button, Select, Input } from 'semantic-ui-react';
+import { Checkbox } from 'semantic-ui-react';
 import CellEdit from './CellEdit';
 import { open, saveAs, save, readData } from '../helpers/csv';
 import { parseDate } from '../helpers/date';
@@ -9,6 +9,7 @@ import { computeTotals } from '../helpers/computations';
 import { OPTIONS_CASHING, OPTIONS_TVA, PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA } from '../helpers/globals';
 import { scrollToBottom, scrollTo } from '../helpers/scroll';
 import Message from './Message';
+import Search from './Search';
 
 AccountLedger.propTypes = {
     parameters: object.isRequired,
@@ -112,10 +113,7 @@ export default function AccountLedger({parameters, fileChange}) {
         return (<th key={ `total-${col.id}` }>{ total }</th>)
     });
 
-    const [searchOption, setSearchOption] = useState(cols[0].id);
-    const [searchText, setSearchText] = useState(undefined);
     const [searchResults, setSearchResults] = useState(undefined);
-    const searchOptions = cols.map(col => ({ key: col.id, text: col.title, value: col.id }));
     
     return (
     <article>
@@ -138,11 +136,9 @@ export default function AccountLedger({parameters, fileChange}) {
                 </button>
             </div>
             { actionMessage && <Message {...actionMessage}></Message> }
-            <Input type="text" placeholder="Rechercher..." action onChange={(e, { value} ) => { setSearchText(value); setSearchResults([]); } }>
-                <input />
-                <Select compact options={ searchOptions } defaultValue={ cols[0].id } onChange={(e, { value} ) => { setSearchOption(value); setSearchResults([]); } } />
-                <Button onClick={ () => search(searchResults, setSearchResults, searchText, searchOption, lines) }><i aria-hidden="true" className="search icon"></i></Button>
-            </Input>
+            <Search cols={ cols } 
+                    onChange={ () => setSearchResults([]) }
+                    onSearchClick={ (text, option) => search(searchResults, setSearchResults, text, option, lines) }></Search>
         </section>
         <section id="ledger-scrollable-container" style={{ height: '75vh', overflow: 'auto'}}>
             <table className="ui table small compact brown sortable">
@@ -196,7 +192,6 @@ function lineChange(setLines, lineNumber, col, val) {
 }
 
 function addLine(setLines, setHighlightedLines, setSelectedLines, cols) {
-    let newLineIndex = -1;
     setLines(prevLines => {
         const newLines = [...prevLines];
         const newLine = {};
