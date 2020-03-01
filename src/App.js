@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import AccountLedger from './components/AccountLedger';
 import Parameters from './components/Parameters';
 import { Tab } from 'semantic-ui-react';
@@ -11,10 +11,6 @@ class App extends React.Component {
     showParam: false,
     tabFiles:[],
   };
-
-  constructor(props) {
-    super(props);
-  }
 
   componentDidMount() {
     if (this.state.parameters.size === 0) {
