@@ -72,7 +72,7 @@ export function saveAs(currentFile, setCurrentFile, fileChange, setLines, setHig
 
 
 // Open CSV file
-export function open(currentFile, setCurrentFile, fileChange, setLines, setHighlightedLines, setSelectedLines, cols) {
+export function open(currentFile, setCurrentFile, fileChange, setLines, setHighlightedLines, setSelectedLines, setActionMessage, cols) {
     const defaultPath = currentFile;
     const filePath = remote.dialog.showOpenDialogSync(remote.getCurrentWindow(), {
         title: 'Ouverture du livre de recette',
@@ -87,6 +87,7 @@ export function open(currentFile, setCurrentFile, fileChange, setLines, setHighl
         setHighlightedLines([]);
         setSelectedLines([]);
         setCurrentFile(filePath[0]);
+        setActionMessage(null);
         fileChange(filePath[0]);
     }
 }
@@ -103,6 +104,7 @@ export function save(filePath, setLines, setHighlightedLines, setSelectedLines, 
             setSelectedLines(_prev => []);
             const now = new Date();
             setActionMessage({ type: 'positive', message: `Enregistrement effectué à ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}` });
-        });
+        })
+        .then(error => console.log(error));
 }
 

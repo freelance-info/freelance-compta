@@ -10,6 +10,7 @@ import { OPTIONS_CASHING, OPTIONS_TVA, PARAMETER_DEFAULT_CASHING, PARAMETER_DEFA
 import { scrollToBottom, scrollTo } from '../helpers/scroll';
 import Message from './Message';
 import Search from './Search';
+import FileButtons from './FileButtons';
 
 AccountLedger.propTypes = {
     parameters: object.isRequired,
@@ -118,27 +119,16 @@ export default function AccountLedger({parameters, fileChange}) {
     return (
     <article>
         <section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '14px', borderBottom: '1px solid rgb(212, 212, 213)' }}>
-            <div>               
-                <button className="ui icon button green" 
-                        onClick={() => open(currentFile, setCurrentFile, fileChange, setLines, setHighlightedLines, setSelectedLines, cols)}
-                        title="Ouvrir">
-                    <i aria-hidden="true" className="folder open icon"></i>
-                </button>
-                <button className="ui icon button green"
-                        onClick={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => saveAs(currentFile, setCurrentFile, fileChange, setLines, setHighlightedLines, setSelectedLines, lines, cols, setActionMessage))}
-                        title="Enregistrer sous">
-                    <i aria-hidden="true" className="copy icon"></i>
-                </button>
-                <button className="ui icon button green"
-                        onClick={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => save(currentFile, setLines, setHighlightedLines, setSelectedLines, lines, cols, setActionMessage))}
-                        title="Enregistrer">
-                    <i aria-hidden="true" className="save icon"></i>
-                </button>
-            </div>
+            <FileButtons 
+                onOpen={() => open(currentFile, setCurrentFile, fileChange, setLines, setHighlightedLines, setSelectedLines, setActionMessage, cols)}
+                onSave={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => save(currentFile, setLines, setHighlightedLines, setSelectedLines, lines, cols, setActionMessage))}
+                onSaveAs={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => saveAs(currentFile, setCurrentFile, fileChange, setLines, setHighlightedLines, setSelectedLines, lines, cols, setActionMessage))}>
+            </FileButtons>
             { actionMessage && <Message {...actionMessage}></Message> }
             <Search cols={ cols } 
                     onChange={ () => setSearchResults([]) }
-                    onSearchClick={ (text, option) => search(searchResults, setSearchResults, text, option, lines) }></Search>
+                    onSearchClick={ (text, option) => search(searchResults, setSearchResults, text, option, lines) }>
+            </Search>
         </section>
         <section id="ledger-scrollable-container" style={{ height: '75vh', overflow: 'auto'}}>
             <table className="ui table small compact brown sortable">
