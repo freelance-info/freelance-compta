@@ -3,6 +3,8 @@
 Logiciel de comptabilité minimal pour être **conforme à la réglementation française** des micro-entreprises BNC.
 Idéal pour les développeur freelance qui souhaitent une base simple (**React.js**) à customiser.
 
+![Minion](./compta.png)
+
 # Quick start
 
 ## Windows
