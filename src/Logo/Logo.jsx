@@ -1,12 +1,11 @@
 import React from 'react';
-
 import logoImage from './logo.png';
 import classes from './Logo.module.css';
 
-const Logo = (props) => (
-    <div className={classes.Logo} onClick={props.clicked}>
-        <img src={logoImage} alt="Logo" />
-    </div>
+const Logo = () => (
+  <button type="button" className={classes.Logo}>
+    <img src={logoImage} alt="Logo" />
+  </button>
 );
 
 export default Logo;
