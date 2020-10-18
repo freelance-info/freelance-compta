@@ -2,7 +2,7 @@ import React from 'react';
 import { Tab } from 'semantic-ui-react';
 import AccountLedger from './components/AccountLedger';
 import Parameters from './components/Parameters';
-import { PARAMETER_KEYS, PARAMETER_ENTREPRISE_NAME } from './helpers/globals';
+import { PARAMETER_KEYS, PARAMETER_ENTREPRISE_NAME } from './reducers/globals';
 
 class App extends React.Component {
   constructor(props) {

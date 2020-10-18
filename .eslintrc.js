@@ -8,9 +8,7 @@ module.exports = {
     'airbnb',
   ],
   parserOptions: {
-    ecmaFeatures: {
-      jsx: true,
-    },
+    ecmaFeatures: { jsx: true },
     ecmaVersion: 12,
     sourceType: 'module',
   },
@@ -23,5 +21,11 @@ module.exports = {
     'jsx-a11y/label-has-associated-control': [2, { required: { some: ['nesting', 'id'] } }],
     'arrow-parens': [2, 'as-needed'],
     'import/prefer-default-export': 'off',
+    'object-curly-newline': ['error', {
+      ObjectExpression: { multiline: true, minProperties: 8 },
+      ObjectPattern: { multiline: true, minProperties: 5 },
+      ImportDeclaration: { multiline: true, minProperties: 5 },
+      ExportDeclaration: { multiline: true, minProperties: 5 },
+    }],
   },
 };

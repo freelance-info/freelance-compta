@@ -7,7 +7,7 @@ import {
 } from 'prop-types';
 import {
   PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA, OPTIONS_TVA, OPTIONS_CASHING,
-} from '../helpers/globals';
+} from '../reducers/globals';
 import Logo from '../Logo/Logo';
 
 const Parameters = ({

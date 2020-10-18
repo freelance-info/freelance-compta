@@ -12,3 +12,18 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.buttons-bar {
+  display: flex;
+  justify-content: space-between;
+}
+.border-top {
+  padding-top: 14px;
+  border-top: 1px solid rgb(212, 212, 213);
+}
+
+.border-bottom {
+  align-items: flex-start;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgb(212, 212, 213);
+}

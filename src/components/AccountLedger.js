@@ -1,17 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import { instanceOf, func } from 'prop-types';
 import { Checkbox } from 'semantic-ui-react';
 import CellEdit from './CellEdit';
-import {
-  open, saveAs, save, readData,
-} from '../helpers/csv';
-import { parseDate } from '../helpers/date';
-import { sortByCol } from '../helpers/sort';
-import { computeTotals } from '../helpers/computations';
-import {
-  OPTIONS_CASHING, OPTIONS_TVA, PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA,
-} from '../helpers/globals';
-import { scrollToBottom, scrollTo } from '../helpers/scroll';
+import { searchLines } from '../reducers/search';
+import { open, saveAs, save, readData } from '../reducers/csv';
+import { computeTotals } from '../reducers/computations';
+import { linesReducer, linesInitialState } from '../reducers/lines.reducer';
+import { scrollToBottom, scrollTo } from '../reducers/scroll';
 import Message from './Message';
 import Search from './Search';
 import FileButtons from './FileButtons';
@@ -19,105 +14,42 @@ import FileButtons from './FileButtons';
 // Livre des recettes
 const AccountLedger = ({ parameters, fileChange }) => {
   // Column metadata definition
-  const [cols, setCols] = useState([
-    {
-      id: 'date', title: 'Date', type: 'Date', required: true,
-    },
-    {
-      id: 'ref', title: 'Réf. de la facture', type: 'Text', required: false, width: '75px',
-    },
-    {
-      id: 'client', title: 'Client', type: 'Text', required: false, width: '150px',
-    },
-    {
-      id: 'nature', title: 'Nature', type: 'Text', required: true, width: '200px',
-    },
-    {
-      id: 'ht', title: 'Montant HT', type: 'Number', required: false, width: '100px',
-    },
-    {
-      id: 'ttc', title: 'Montant TTC', type: 'Number', required: true, width: '100px',
-    },
-    {
-      id: 'tva', title: 'TVA', type: 'Select', required: false, width: '75px', options: OPTIONS_TVA,
-    },
-    {
-      id: 'mode',
-      title: "Mode d'encaissement",
-      type: 'Select',
-      required: false,
-      width: '100px',
-      options: OPTIONS_CASHING,
-    },
-  ]);
-  const [lines, setLines] = useState([]);
   const storedCurrentFile = localStorage.getItem('accountLedger');
   const [currentFile, setCurrentFile] = useState(undefined);
-  const [selectedLines, setSelectedLines] = useState([]);
-  const [highlightedLines, setHighlightedLines] = useState([]);
+  const [{
+    selectedLines,
+    highlightedLines,
+    lines,
+    cols,
+  }, dispatchLinesAction] = useReducer(linesReducer, linesInitialState);
 
   /** ****** SELECTED LINES ACTIONS  */
   const selectAll = checked => {
-    setSelectedLines(() => (checked ? lines.map((_line, index) => index) : []));
+    if (checked) {
+      dispatchLinesAction({ type: 'selectAll' });
+    } else {
+      dispatchLinesAction({ type: 'unselectAll' });
+    }
   };
 
   const select = (lineNumber, checked) => {
-    setSelectedLines(prevSelectedLines => {
-      const newSelectedLines = [...prevSelectedLines];
-      if (checked) {
-        newSelectedLines.push(lineNumber);
-      } else {
-        const idx = newSelectedLines.findIndex(selectedLine => selectedLine === lineNumber);
-        newSelectedLines.splice(idx, 1);
-      }
-      return newSelectedLines;
-    });
+    dispatchLinesAction({ type: 'select', checked, lineNumber });
   };
 
   const removeLines = () => {
-    setLines(prevLines => {
-      const newLines = [];
-      prevLines.forEach((line, index) => {
-        if (!selectedLines.some(idx => index === idx)) {
-          newLines.push(line);
-        }
-      });
-      setSelectedLines(() => []);
-      return newLines;
-    });
+    dispatchLinesAction({ type: 'removeSelected' });
   };
 
   const duplicateLines = () => {
-    const newHighlightedLines = [];
-    setLines(prevLines => {
-      const newLines = [...prevLines];
-      prevLines.forEach((line, index) => {
-        if (selectedLines.some(idx => index === idx)) {
-          const newLine = { ...line };
-          newLines.push(newLine);
-          newHighlightedLines.push(newLines.length - 1);
-        }
-      });
-      return newLines;
-    });
-    setHighlightedLines(prev => [...prev, ...newHighlightedLines]);
-    setSelectedLines([]);
+    dispatchLinesAction({ type: 'duplicateSelected' });
   };
   /** ******************* */
 
   useEffect(() => {
-    setCols(prevCols => {
-      // Set default values from parameters
-      const newCols = [...prevCols];
-      const tvaIndex = newCols.findIndex(prevCol => prevCol.id === 'tva');
-      newCols[tvaIndex].defaultValue = parameters.get(PARAMETER_DEFAULT_TVA);
-      const modeIndex = newCols.findIndex(prevCol => prevCol.id === 'mode');
-      newCols[modeIndex].defaultValue = parameters.get(PARAMETER_DEFAULT_CASHING);
-      return newCols;
-    });
+    dispatchLinesAction({ type: 'initCols', parameters });
   }, [parameters]);
 
-  // Read data from saved file
+  // Read data from file
   useEffect(() => {
     if (!currentFile) {
       if (storedCurrentFile) {
@@ -128,37 +60,19 @@ const AccountLedger = ({ parameters, fileChange }) => {
       if (currentFile !== storedCurrentFile) {
         localStorage.setItem('accountLedger', currentFile);
       }
-      readData(currentFile, cols).then(readLines => {
-        setLines(() => sortByCol(readLines, 'date'));
-        setHighlightedLines(() => []);
-        setSelectedLines(() => []);
+      readData(currentFile, cols).then(initLines => {
+        dispatchLinesAction({ type: 'initLines', initLines });
       });
     }
   }, [currentFile]);
 
   const lineChange = (lineNumber, col, val) => {
-    setLines(prevLines => {
-      const newLines = [...prevLines];
-      newLines[lineNumber][col.id] = val;
-      if (col.id === 'ht') {
-        const tva = newLines[lineNumber].tva / 100;
-        newLines[lineNumber].ttc = Math.round(val * (1 + tva) * 100) / 100;
-      }
-      return newLines;
-    });
+    dispatchLinesAction({ type: 'lineChange', lineNumber, col, val });
   };
 
   const addLine = () => {
-    setLines(prevLines => {
-      const newLines = [...prevLines];
-      const newLine = {};
-      cols.forEach(col => { newLine[col.id] = col.defaultValue; });
-      newLines.push(newLine);
-      setHighlightedLines(previousLines => [...previousLines, newLines.length - 1]);
-      setSelectedLines([]);
-      setTimeout(() => scrollToBottom('#ledger-scrollable-container'), 200);
-      return newLines;
-    });
+    dispatchLinesAction({ type: 'addLine' });
+    setTimeout(() => scrollToBottom('#ledger-scrollable-container'), 200);
   };
 
   const computedTotals = computeTotals(lines, cols);
@@ -172,30 +86,10 @@ const AccountLedger = ({ parameters, fileChange }) => {
   const [sortState, setSortState] = useState({ column: 'date', direction: 'ascending' });
   const handleSort = clickedColumn => {
     const { column, direction } = sortState;
-
-    if (column !== clickedColumn) {
-      setSortState({
-        column: clickedColumn,
-        direction: 'ascending',
-      });
-      setLines(prev => {
-        const newLines = [...prev];
-        newLines.sort((a, b) => a[clickedColumn] < b[clickedColumn]);
-        return newLines;
-      });
-    } else {
-      setSortState(() => ({
-        column,
-        direction: direction === 'ascending' ? 'descending' : 'ascending',
-      }));
-      setLines(prev => {
-        const newLines = [...prev];
-        newLines.reverse();
-        return newLines;
-      });
-    }
+    const newDirection = column === clickedColumn && direction === 'ascending' ? 'descending' : 'ascending';
+    setSortState({ column: clickedColumn, direction: newDirection });
+    dispatchLinesAction({ type: 'sortLines', clickedColumn, direction: newDirection });
   };
-  /** ******************* */
 
   /** ******* ERRORS **** */
   const [errors, setErrors] = useState([]);
@@ -220,7 +114,7 @@ const AccountLedger = ({ parameters, fileChange }) => {
   };
 
   // Write values to current file
-  const checkErrorsThen = fn => {
+  const checkErrors = () => new Promise((resolve, reject) => {
     // Check error on every existing lines
     const errorLines = lines.map((line, lineNumber) => validateLine(line, lineNumber, cols))
       .filter(error => error.cols.length > 0);
@@ -229,16 +123,24 @@ const AccountLedger = ({ parameters, fileChange }) => {
     if (errorLines.length === 0) {
       setErrors(() => []);
       setActionMessage(undefined);
-      fn();
+      resolve();
     } else {
       setErrors(() => errorLines);
       setActionMessage({ type: 'negative', message: 'Enregistrement impossible, veuillez corriger les erreurs' });
       setTimeout(() => scrollTo('#ledger-scrollable-container', `#body-cell-${errorLines[0].lineNumber}-${cols[0].id}`),
         200);
+      reject();
     }
-  };
+  });
 
-  /** ******************* */
+  /** ****** SEARCH ********* */
+  const [searchResults, setSearchResults] = useState(undefined);
+
+  // Search the given col for text, then scroll to it
+  const search = (searchText, searchColId) => {
+    setSearchResults(searchLines(lines, searchText, searchColId, searchResults));
+  };
+  /** *************** */
 
   const thead = cols.map(col => (
     <th
@@ -281,60 +183,24 @@ const AccountLedger = ({ parameters, fileChange }) => {
     );
   });
 
-  /** ****** SEARCH ********* */
-  const [searchResults, setSearchResults] = useState(undefined);
-
-  // Search the given col for text, then scroll to it
-  const search = (searchText, searchColId) => {
-    let newSearchResults;
-    let regexp = null;
-    if (searchColId.toLowerCase() === 'date') {
-      const normalizedDate = parseDate(searchText);
-      if (normalizedDate) {
-        const dateString = normalizedDate.toISOString().substr(0, 10);
-        regexp = new RegExp(dateString);
-      } else {
-        return;
-      }
-    } else {
-      regexp = new RegExp(searchText, 'gi');
-    }
-    if (searchResults.length === 0) {
-      newSearchResults = [];
-      lines.forEach((line, index) => {
-        if (line[searchColId] && `${line[searchColId]}`.search(regexp) >= 0) {
-          newSearchResults.push(index);
-        }
-      });
-    }
-    if (searchResults.length > 0) {
-      newSearchResults = [...searchResults];
-      const lineIndex = newSearchResults.shift();
-      const cellId = `#body-cell-${lineIndex}-${searchColId}`;
-      scrollTo('#ledger-scrollable-container', cellId);
-      document.querySelectorAll('input').forEach(input => { input.style.backgroundColor = 'transparent'; });
-      document.querySelector(cellId).querySelector('input').style.backgroundColor = 'yellow';
-    }
-    setSearchResults(newSearchResults);
-  };
-  /** *************** */
-
   return (
     <article>
-      <section style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        paddingBottom: '14px',
-        borderBottom: '1px solid rgb(212, 212, 213)',
-      }}
-      >
+      <section className="buttons-bar border-bottom">
         <FileButtons
-          onOpen={() => open(currentFile, setCurrentFile, fileChange, setLines, setHighlightedLines, setSelectedLines, setActionMessage, cols)}
-          onSave={() => checkErrorsThen(() => save(currentFile, setLines, setHighlightedLines, setSelectedLines, lines, cols, setActionMessage))}
-          onSaveAs={() => checkErrorsThen(() => saveAs(currentFile, setCurrentFile, fileChange, setLines, setHighlightedLines, setSelectedLines, lines, cols, setActionMessage))}
+          onOpen={() => {
+            open(currentFile, setCurrentFile, fileChange, setActionMessage, lines, cols)
+              .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }));
+          }}
+          onSave={() => checkErrors()
+            .then(() => save(currentFile, lines, cols, setActionMessage))
+            .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }))
+          }
+          onSaveAs={() => checkErrors()
+            .then(() => saveAs(currentFile, setCurrentFile, fileChange, lines, cols, setActionMessage))
+            .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }))
+          }
         />
-        {actionMessage && <Message {...actionMessage} />}
+        {actionMessage && <Message type={actionMessage.type} message={actionMessage.message} />}
         <Search
           cols={cols}
           onChange={() => setSearchResults([])}
@@ -365,10 +231,7 @@ const AccountLedger = ({ parameters, fileChange }) => {
           </tfoot>
         </table>
       </section>
-      <section style={{
-        display: 'flex', justifyContent: 'space-between', paddingTop: '14px', borderTop: '1px solid rgb(212, 212, 213)',
-      }}
-      >
+      <section className="buttons-bar border-top">
         <div>
           <button type="button" className="ui icon button primary" onClick={addLine}>
             <i aria-hidden="true" className="plus icon" />
