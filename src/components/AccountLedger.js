@@ -1,355 +1,206 @@
-import React, { useState, useEffect } from 'react';
-import { Checkbox, Button, Select, Input } from 'semantic-ui-react';
-import CellEdit from './CellEdit';
-import { open, saveAs, save, readData } from '../helpers/csv';
-import { parseDate } from '../helpers/date';
-import { sortByCol } from '../helpers/sort';
-import { computeTotals } from '../helpers/computations';
-import { OPTIONS_CASHING, OPTIONS_TVA, PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA } from '../helpers/globals';
-import { scrollToBottom, scrollTo } from '../helpers/scroll';
+import React, { useState, useEffect, useReducer } from 'react';
+import { instanceOf, func } from 'prop-types';
+import { searchLines } from '../reducers/search';
+import { open, saveAs, save, readData } from '../reducers/csv';
+import { linesReducer, linesInitialState } from '../reducers/lines.reducer';
+import { scrollToBottom, scrollTo } from '../reducers/scroll';
+import Message from './Message';
+import Search from './Search';
+import FileButtons from './FileButtons';
+import { Table } from './Table';
 
 // Livre des recettes
-export default function AccountLedger({parameters, fileChange}) {  
+const AccountLedger = ({ parameters, fileChange }) => {
+  // Column metadata definition
+  const storedCurrentFile = localStorage.getItem('accountLedger');
+  const [currentFile, setCurrentFile] = useState(undefined);
+  const [{
+    selectedLines,
+    highlightedLines,
+    lines,
+    cols,
+  }, dispatchLinesAction] = useReducer(linesReducer, linesInitialState);
 
-    // Column metadata definition
-    const [cols, setCols] = useState([
-        { id: 'date', title: 'Date', type: 'Date', required: true },
-        { id: 'ref', title: 'Réf. de la facture', type: 'Text', required: false, width: '75px' },
-        { id: 'client', title: 'Client', type: 'Text', required: false, width: '150px' },
-        { id: 'nature', title: 'Nature', type: 'Text', required: true, width: '200px' },
-        { id: 'ht', title: 'Montant HT', type: 'Number', required: false, width: '100px' },
-        { id: 'ttc', title: 'Montant TTC', type: 'Number', required: true, width: '100px' },
-        { id: 'tva', title: 'TVA', type: 'Select', required: false, width: '75px', options: OPTIONS_TVA },
-        { id: 'mode', title: "Mode d'encaissement", type: 'Select', required: false, width: '100px', options: OPTIONS_CASHING },
-    ]);
-    useEffect(() => {
-        setCols(prevCols => {
-            // Set default values from parameters
-            const newCols = [...prevCols];
-            const tvaIndex = newCols.findIndex(prevCol => prevCol.id === 'tva');
-            newCols[tvaIndex].defaultValue = parameters.get(PARAMETER_DEFAULT_TVA);
-            const modeIndex = newCols.findIndex(prevCol => prevCol.id === 'mode');
-            newCols[modeIndex].defaultValue = parameters.get(PARAMETER_DEFAULT_CASHING);
-            return newCols;
-        });
-    }, [parameters]);
+  /** ****** SELECTED LINES ACTIONS  */
+  const selectAll = checked => {
+    if (checked) {
+      dispatchLinesAction({ type: 'selectAll' });
+    } else {
+      dispatchLinesAction({ type: 'unselectAll' });
+    }
+  };
 
-    // Read data from saved file
-    const [lines, setLines] = useState([]);
-    const storedCurrentFile = localStorage.getItem('accountLedger');
-    const [currentFile, setCurrentFile] = useState(undefined);
-    useEffect(() => {
-        if (!currentFile) {
-            if (storedCurrentFile) {
-                setCurrentFile(() => storedCurrentFile);
-                fileChange(storedCurrentFile);
-            }
-        } else {
-            if (currentFile !== storedCurrentFile) {
-                localStorage.setItem('accountLedger', currentFile);
-            }
-            readData(currentFile, cols).then(readLines => {
-                setLines(() => sortByCol(readLines, 'date'));
-                setHighlightedLines(() => []);
-                setSelectedLines(() => []);
-            });
-        }
-    }, [currentFile]);
+  const select = (lineNumber, checked) => {
+    dispatchLinesAction({ type: 'select', checked, lineNumber });
+  };
 
-    const [selectedLines, setSelectedLines] = useState([]);
-    const [highlightedLines, setHighlightedLines] = useState([]);
+  const removeLines = () => {
+    dispatchLinesAction({ type: 'removeSelected' });
+  };
 
-    const [sortState, setSortState] = useState({ column: 'date', direction: 'ascending', });
+  const duplicateLines = () => {
+    dispatchLinesAction({ type: 'duplicateSelected' });
+  };
+  /** ******************* */
 
-    const [errors, setErrors] = useState([]);
-    const [actionMessage, setActionMessage] = useState(undefined);
-    
-    const thead = cols.map((col, colNumber) => (
-        <th key={`header-cell-${colNumber}`}
-            onClick={ () => handleSort(col.id, sortState, setSortState, setLines) }
-            className={ sortState.column === col.id ? 'sorted ' + sortState.direction : 'sorted' }>
-                { col.title }
-        </th>
-    ));
-    
-    const tbody = lines.map((line, lineNumber) => {
-        const td = cols.map(col => {
-            const key = `body-cell-${lineNumber}-${col.id}`;
-            const errorMsg = getErrorMsg(lineNumber, errors, col);
-            return (
-                <td key={key} id={key} className={errorMsg ? 'error' : ''}>
-                    <CellEdit 
-                        def={col}
-                        value={ line[col.id] } 
-                        onChange={ (val) => lineChange(setLines, lineNumber, col, val) }>
-                    </CellEdit>
-                    { errorMsg || '' }
-                </td>)}
-            );
-        return (
-            <tr key={`body-line-${lineNumber}`} 
-                className={ highlightedLines.includes(lineNumber) ? 'positive' : '' }>
-                <td key={`body-check-${lineNumber}`}>
-                    <Checkbox checked={ selectedLines.some(selectedLine => selectedLine === lineNumber) }
-                        onChange={(e, { checked }) => select(setSelectedLines, lineNumber, checked) } />
-                </td>
-                { td }
-            </tr>
-        );
-    });
+  useEffect(() => {
+    dispatchLinesAction({ type: 'initCols', parameters });
+  }, [parameters]);
 
-    const actionMessageDiv = actionMessage ? (
-        <div className={ 'ui message ' + actionMessage.type } style={{display : 'flex', margin: '0'}}>
-            <i className={(actionMessage.type === 'positive' ? 'check circle outline' : 'times circle outline') + ' icon'}></i>
-            <div className="content">
-                <div className="header">{ actionMessage.message }</div>
-            </div>
-        </div>
-    ) : undefined;
+  // Read data from file
+  useEffect(() => {
+    if (!currentFile) {
+      if (storedCurrentFile) {
+        setCurrentFile(() => storedCurrentFile);
+        fileChange(storedCurrentFile);
+      }
+    } else {
+      if (currentFile !== storedCurrentFile) {
+        localStorage.setItem('accountLedger', currentFile);
+      }
+      readData(currentFile, cols).then(initLines => {
+        dispatchLinesAction({ type: 'initLines', initLines });
+      });
+    }
+  }, [currentFile]);
 
-    const computedTotals = computeTotals(lines, cols);
-    const totals = cols.map(col => {
-        let total = computedTotals.get(col.id);
-        total = total ? total + '€' : '';
-        return (<th key={ `total-${col.id}` }>{ total }</th>)
-    });
+  const rowChange = (lineNumber, col, val) => {
+    dispatchLinesAction({ type: 'lineChange', lineNumber, col, val });
+  };
 
-    const [searchOption, setSearchOption] = useState(cols[0].id);
-    const [searchText, setSearchText] = useState(undefined);
-    const [searchResults, setSearchResults] = useState(undefined);
-    const searchOptions = cols.map(col => ({ key: col.id, text: col.title, value: col.id }));
-    
-    return (
-    <article>
-        <section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '14px', borderBottom: '1px solid rgb(212, 212, 213)' }}>
-            <div>               
-                <button className="ui icon button green" 
-                        onClick={() => open(currentFile, setCurrentFile, fileChange, setLines, setHighlightedLines, setSelectedLines, cols)}
-                        title="Ouvrir">
-                    <i aria-hidden="true" className="folder open icon"></i>
-                </button>
-                <button className="ui icon button green"
-                        onClick={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => saveAs(currentFile, setCurrentFile, fileChange, setLines, setHighlightedLines, setSelectedLines, lines, cols, setActionMessage))}
-                        title="Enregistrer sous">
-                    <i aria-hidden="true" className="copy icon"></i>
-                </button>
-                <button className="ui icon button green"
-                        onClick={() => checkErrorsThen(lines, cols, setErrors, setActionMessage, () => save(currentFile, setLines, setHighlightedLines, setSelectedLines, lines, cols, setActionMessage))}
-                        title="Enregistrer">
-                    <i aria-hidden="true" className="save icon"></i>
-                </button>
-            </div>
-            { actionMessageDiv || '' }
-            <Input type="text" placeholder="Rechercher..." action onChange={(e, { value} ) => { setSearchText(value); setSearchResults([]); } }>
-                <input />
-                <Select compact options={ searchOptions } defaultValue={ cols[0].id } onChange={(e, { value} ) => { setSearchOption(value); setSearchResults([]); } } />
-                <Button onClick={ () => search(searchResults, setSearchResults, searchText, searchOption, lines) }><i aria-hidden="true" className="search icon"></i></Button>
-            </Input>
-        </section>
-        <section id="ledger-scrollable-container" style={{ height: '75vh', overflow: 'auto'}}>
-            <table className="ui table small compact brown sortable">
-                <thead>
-                    <tr>
-                        <th key={`header-check`}>
-                            <Checkbox checked={ selectedLines.length > 0 && selectedLines.length === lines.length } 
-                                onChange={(_e, { checked }) => selectAll(setSelectedLines, lines, checked) } />
-                        </th>
-                        { thead }
-                    </tr>
-                </thead>
-                <tbody>
-                    { tbody } 
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th></th>
-                        { totals }
-                    </tr>
-                </tfoot>
-            </table>
-        </section>
-        <section style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '14px', borderTop: '1px solid rgb(212, 212, 213)' }}>
-            <div>
-                <button className="ui icon button primary" onClick={() => addLine(setLines, setHighlightedLines, setSelectedLines, cols)}>
-                    <i aria-hidden="true" className="plus icon"></i> Nouvelle ligne
-                </button>
-                <button disabled={selectedLines.length === 0} className="ui icon button red" onClick={() => removeLines(setLines, setSelectedLines, selectedLines)}>
-                    <i aria-hidden="true" className="trash icon"></i> Supprimer les lignes
-                </button>
-                <button disabled={selectedLines.length === 0} className="ui icon button secondary" onClick={() => duplicateLines(setLines, setHighlightedLines, setSelectedLines, selectedLines)}>
-                    <i aria-hidden="true" className="copy icon"></i> Dupliquer les lignes
-                </button>
-            </div>
-        </section>
-    </article>
-    );
-}
+  const addLine = () => {
+    dispatchLinesAction({ type: 'addLine' });
+    setTimeout(() => scrollToBottom('#ledger-scrollable-container'), 200);
+  };
 
-function lineChange(setLines, lineNumber, col, val) {
-    setLines(prevLines => {
-        const newLines = [...prevLines];
-        newLines[lineNumber][col.id] = val;
-        if (col.id === 'ht') {
-            const tva = newLines[lineNumber]['tva'] / 100;
-            newLines[lineNumber]['ttc'] = Math.round(val * (1 + tva) * 100) / 100;
-        }
-        return newLines;
-    });
-}
+  /** ******  SORT ********* */
+  const [sortState, setSortState] = useState({ column: 'date', direction: 'ascending' });
+  const handleSort = clickedColumn => {
+    const { column, direction } = sortState;
+    const newDirection = column === clickedColumn && direction === 'ascending' ? 'descending' : 'ascending';
+    setSortState({ column: clickedColumn, direction: newDirection });
+    dispatchLinesAction({ type: 'sortLines', clickedColumn, direction: newDirection });
+  };
 
-function addLine(setLines, setHighlightedLines, setSelectedLines, cols) {
-    let newLineIndex = -1;
-    setLines(prevLines => {
-        const newLines = [...prevLines];
-        const newLine = {};
-        cols.forEach(col => newLine[col.id] = col.defaultValue);
-        newLines.push(newLine);
-        setHighlightedLines(prevLines => [...prevLines, newLines.length - 1]);
-        setSelectedLines([]);
-        setTimeout(() => scrollToBottom('#ledger-scrollable-container'), 200);
-        return newLines;
-    });
-}
+  /** ******* ERRORS **** */
+  const [errors, setErrors] = useState([]);
+  const [actionMessage, setActionMessage] = useState(undefined);
 
-function selectAll(setSelectedLines, lines, checked) {
-    setSelectedLines(_prevSelectedLines => {
-        return checked ? lines.map((_line, index) => index): [];
-    });
-}
+  // Return error object if any for given line
+  const validateLine = (line, lineNumber, columns) => ({
+    lineNumber,
+    cols: columns.filter(col => col.required && !line[col.id]),
+  });
 
-function select(setSelectedLines, lineNumber, checked) {
-    setSelectedLines(prevSelectedLines => {
-        let newSelectedLines = [...prevSelectedLines];
-        if (checked) {
-            newSelectedLines.push(lineNumber);
-        } else {
-            const idx = newSelectedLines.findIndex(selectedLine => selectedLine === lineNumber);
-           newSelectedLines.splice(idx, 1);
-        }
-        return newSelectedLines;
-    });
-}
-
-function removeLines(setLines, setSelectedLines, selectedLines) {
-    
-    setLines(prevLines => {
-        let newLines = [];
-        prevLines.forEach((line, index) => {
-          if (!selectedLines.some(idx => index === idx)) {
-            newLines.push(line);
-          }
-        });
-        setSelectedLines(() => []);
-        return newLines;
-    });
-}
-
-function duplicateLines(setLines, setHighlightedLines, setSelectedLines, selectedLines) {
-    const newHighlightedLines = [];
-    setLines(prevLines => {
-        let newLines = [...prevLines];
-        prevLines.forEach((line, index) => {
-          if (selectedLines.some(idx => index === idx)) {
-            const newLine = {...line};
-            newLines.push(newLine);
-            newHighlightedLines.push(newLines.length-1);
-          }
-        });
-        return newLines;
-    });
-    setHighlightedLines(prev => [...prev, ...newHighlightedLines]);
-    setSelectedLines([]);
-}
-
-// Write values to current file
-function checkErrorsThen(lines, cols, setErrors, setActionMessage, fn) {
-
+  // Write values to current file
+  const checkErrors = () => new Promise((resolve, reject) => {
     // Check error on every existing lines
-    const errors = lines.map((line, lineNumber) => validateLine(line, lineNumber, cols))
-        .filter(error => error.cols.length > 0);
+    const errorLines = lines.map((line, lineNumber) => validateLine(line, lineNumber, cols))
+      .filter(error => error.cols.length > 0);
 
     // Perform save action if no error
-    if (errors.length === 0) {
-        setErrors(() => []);
-        setActionMessage(undefined);
-        fn();
+    if (errorLines.length === 0) {
+      setErrors(() => []);
+      setActionMessage(undefined);
+      resolve();
     } else {
-        setErrors(() => errors);
-        setActionMessage({ type: 'negative', message: 'Enregistrement impossible, veuillez corriger les erreurs' });
-        setTimeout(() => scrollTo('#ledger-scrollable-container', `#body-cell-${errors[0].lineNumber}-${cols[0].id}`), 200);
+      setErrors(() => errorLines);
+      setActionMessage({ type: 'negative', message: 'Enregistrement impossible, veuillez corriger les erreurs' });
+      setTimeout(() => scrollTo('#ledger-scrollable-container', `#body-cell-${errorLines[0].lineNumber}-${cols[0].id}`),
+        200);
+      reject();
     }
-}
+  });
 
-// Return error object if any for given line
-function validateLine(line, lineNumber, cols) {
-    return {
-        lineNumber,
-        cols: cols.filter(col => col.required && !line[col.id])
-    };
-}
+  /** ****** SEARCH ********* */
+  const [searchResults, setSearchResults] = useState(undefined);
 
-// Return error message to display if any for given line / column
-function getErrorMsg(lineNumber, errors, col) {
-    const error = errors.filter(err => err.lineNumber === lineNumber);
-    return error.length === 0 ? undefined : error[0].cols.some(errorCol => col.id === errorCol.id) ?
-        (<i className="icon attention" title="Obligatoire"></i>) : '';
-}
+  // Search the given col for text, then scroll to it
+  const search = (searchText, searchColId) => {
+    setSearchResults(searchLines(lines, searchText, searchColId, searchResults));
+  };
+  /** *************** */
 
-// Search the given col for text, then scroll to it
-function search(searchResults, setSearchResults, searchText, searchColId, lines) {
+  /*********** FILES *************** */
+  const onOpen = () => {
+    open(currentFile, setCurrentFile, fileChange, setActionMessage, lines, cols)
+      .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }));
+  };
 
-    let regexp = null;
-    if (searchColId.toLowerCase() === 'date') {
-        const normalizedDate = parseDate(searchText);
-        if (normalizedDate) {
-            const dateString = normalizedDate.toISOString().substr(0, 10);
-            regexp = new RegExp(dateString);
-        } else {
-            return;
-        }
+  const onSaveAs = () => checkErrors()
+    .then(() => saveAs(currentFile, setCurrentFile, fileChange, lines, cols, setActionMessage))
+    .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }));
+
+  const onSave = () => {
+    if (currentFile) {
+      checkErrors()
+        .then(() => save(currentFile, lines, cols, setActionMessage))
+        .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }));
     } else {
-        regexp = new RegExp(searchText, 'gi');
+      // If this is the 1st time app is launched, there is no currentFile: run saveAs
+      onSaveAs();
     }
-    if (searchResults.length === 0) {  
-        searchResults = [];
-        lines.forEach((line, index) => {
-            if (line[searchColId] && `${line[searchColId]}`.search(regexp) >= 0) {
-                searchResults.push(index);
-            }
-        });
-   }
-   if (searchResults.length > 0) {
-        const lineIndex = searchResults.shift();
-        const cellId = `#body-cell-${lineIndex}-${searchColId}`;
-        scrollTo('#ledger-scrollable-container', cellId);
-        document.querySelectorAll('input').forEach(input => input.style.backgroundColor = 'transparent');
-        document.querySelector(cellId).querySelector('input').style.backgroundColor = 'yellow';
-    }
-    setSearchResults(searchResults);
-}
+  };
 
-function handleSort(clickedColumn, sortState, setSortState, setLines) {
-    const { column, direction } = sortState;
+  return (
+    <article>
+      <section className="buttons-bar border-bottom">
+        <FileButtons onOpen={onOpen} onSave={onSave} onSaveAs={onSaveAs} />
+        {actionMessage && <Message type={actionMessage.type} message={actionMessage.message} />}
+        <Search cols={cols} onChange={() => setSearchResults([])} onSearchClick={(text, option) => search(text, option)} />
+      </section>
+      <section id="ledger-scrollable-container" style={{ height: '75vh', overflow: 'auto' }}>
+        <Table
+          key="account-ledger-table"
+          cols={cols}
+          lines={lines}
+          rowChange={rowChange}
+          selectedLines={selectedLines}
+          select={select}
+          allSelected={selectedLines.length > 0 && selectedLines.length === lines.length}
+          selectAll={selectAll}
+          highlightedLines={highlightedLines}
+          sort={sortState}
+          onSort={handleSort}
+          errors={errors}
+        />
+      </section>
+      <section className="buttons-bar border-top">
+        <div>
+          <button type="button" className="ui icon button primary" onClick={addLine}>
+            <i aria-hidden="true" className="plus icon" />
+            {' '}
+            Nouvelle ligne
+          </button>
+          <button
+            type="button"
+            disabled={selectedLines.length === 0}
+            className="ui icon button red"
+            onClick={removeLines}
+          >
+            <i aria-hidden="true" className="trash icon" />
+            {' '}
+            Supprimer les lignes
+          </button>
+          <button
+            type="button"
+            disabled={selectedLines.length === 0}
+            className="ui icon button secondary"
+            onClick={duplicateLines}
+          >
+            <i aria-hidden="true" className="copy icon" />
+            {' '}
+            Dupliquer les lignes
+          </button>
+        </div>
+      </section>
+    </article>
+  );
+};
 
-    if (column !== clickedColumn) {
-        setSortState({
-            column: clickedColumn,
-            direction: 'ascending',
-        });
-        setLines(prev => {
-            const newLines = [...prev];
-            newLines.sort((a, b) => a[clickedColumn] < b[clickedColumn]);
-            return newLines;
-        })
-    } else {
-        setSortState(() => ({
-            column,
-            direction: direction === 'ascending' ? 'descending' : 'ascending',
-        }));
-        setLines(prev => {
-            const newLines = [...prev];
-            newLines.reverse();
-            return newLines;
-        });
-    }
-}
+AccountLedger.propTypes = {
+  parameters: instanceOf(Map).isRequired,
+  fileChange: func.isRequired,
+};
+
+export default AccountLedger;

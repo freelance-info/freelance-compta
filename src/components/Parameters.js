@@ -1,89 +1,118 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Button, Select } from 'semantic-ui-react';
-import { PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA, OPTIONS_TVA, OPTIONS_CASHING } from '../helpers/globals';
+import {
+  Modal, Form, Button, Select,
+} from 'semantic-ui-react';
+import { func, instanceOf, bool } from 'prop-types';
+import { PARAMETER_KEYS } from '../reducers/globals';
 import Logo from '../Logo/Logo';
 
-export default function Parameters({ parameterKeys, initialParametersValue, open, close }) {
+const Parameters = ({
+  initialParametersValue, open, close,
+}) => {
+  const [parameterValues, setParameterValues] = useState(new Map(initialParametersValue));
 
-    const [parameterValues, setParameterValues] = useState(new Map(initialParametersValue));
-    
-    useEffect(() => {
-        setParameterValues(new Map(initialParametersValue));
-    }, [initialParametersValue])
-    
-    const [errorMessage, setErrorMessage] = useState(undefined);
+  useEffect(() => {
+    setParameterValues(new Map(initialParametersValue));
+  }, [initialParametersValue]);
 
-    const onValidate = () => {
-        const allFieldsOk = parameterKeys.every(parameterKey => !!parameterValues.get(parameterKey));
-        if (allFieldsOk) {
-            close(parameterValues);
-        } else {
-            setErrorMessage('Vous devez remplir tous les champs.');
-        }
-    };
+  const [errorMessage, setErrorMessage] = useState(undefined);
 
-    const onChange = (parameterKey, value) => {
-        setParameterValues(prevMap => {
-            const newMap = new Map(prevMap);
-            newMap.set(parameterKey, value);
-            return newMap;
-        });
-    };
-
-    const parameters = parameterKeys.map((parameterKey, index) => {
-        let input;
-        const value = parameterValues.get(parameterKey);
-
-        switch(parameterKey) {
-            case PARAMETER_DEFAULT_CASHING: 
-                input = (<Select compact options={ OPTIONS_CASHING } onChange={(_event, {value} ) => onChange(parameterKey, value) } value={ value } />);
-                break;
-            case PARAMETER_DEFAULT_TVA:
-                input = (<Select compact options={ OPTIONS_TVA } onChange={(_event, {value} ) => onChange(parameterKey, value) } value={ value } />);
-                break;
-            default:
-                input = (<input id={`param-${index}`} placeholder={parameterKey} onChange={ event => onChange(parameterKey, event.target.value) } value={ value || '' } />);
-        };
-        return (
-            <Form.Field key={parameterKey}>
-                <label>{parameterKey}</label>
-                { input }
-            </Form.Field>
-        );
+  const onValidate = () => {
+    let allFieldsOk = true;
+    PARAMETER_KEYS.forEach((_value, parameterKey) => {
+      if (!parameterValues.get(parameterKey)) {
+        setErrorMessage('Vous devez remplir tous les champs.');
+        allFieldsOk = false;
+      }
     });
+    if (allFieldsOk) {
+      close(parameterValues);
+    }
+  };
 
-    const errorDiv = errorMessage ? (<div className="ui message negative" style={{ display: 'flex', marginTop: '0' }}>
-        <i className="times circle outline icon"></i>
-        <div className="content">
-            <div className="header">{errorMessage}</div>
-        </div>
-    </div>) : '';
+  const onChange = (parameterKey, value) => {
+    setParameterValues(prevMap => {
+      const newMap = new Map(prevMap);
+      newMap.set(parameterKey, value);
+      return newMap;
+    });
+  };
 
-    return (
-        <Modal
-            open={open}
-            closeOnEscape={false}
-            closeOnDimmerClick={false}>
-            <Modal.Header style={ { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } }>
-                <span>Paramètres généraux</span><Logo></Logo>
-            </Modal.Header>
-            <Modal.Content>
-                <Form>
-                    {parameters}
-                </Form>
-            </Modal.Content>
-            <Modal.Actions>
-                {errorDiv}
-                <Button
-                    onClick={onValidate}
-                    positive
-                    labelPosition='right'
-                    icon='checkmark'
-                    content='Valider'
-                />
-            </Modal.Actions>
-        </Modal>
+  const parameters = [];
+  PARAMETER_KEYS.forEach((parameterOptions, parameterKey, index) => {
+    let input;
+    const value = parameterValues.get(parameterKey);
+
+    if (!parameterOptions) {
+      input = (
+        <input
+          id={`param-${index}`}
+          type="text"
+          placeholder={parameterKey}
+          onChange={event => onChange(parameterKey, event.target.value)}
+          value={value || ''}
+        />
+      );
+    } else { 
+      input = (
+          <Select
+            compact
+            options={parameterOptions}
+            onChange={(_event, { value: val }) => onChange(parameterKey, val)}
+            value={value}
+          />
+      );
+    }
+    parameters.push(
+      <Form.Field key={parameterKey}>
+        <label>{parameterKey}</label>
+        { input}
+      </Form.Field>
     );
-}
+  });
 
+  const errorDiv = errorMessage ? (
+    <div className="ui message negative" style={{ display: 'flex', marginTop: '0' }}>
+      <i className="times circle outline icon" />
+      <div className="content">
+        <div className="header">{errorMessage}</div>
+      </div>
+    </div>
+  ) : '';
 
+  return (
+    <Modal
+      open={open}
+      closeOnEscape={false}
+      closeOnDimmerClick={false}
+    >
+      <Modal.Header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span>Paramètres généraux</span>
+        <Logo />
+      </Modal.Header>
+      <Modal.Content>
+        <Form>
+          {parameters}
+        </Form>
+      </Modal.Content>
+      <Modal.Actions>
+        {errorDiv}
+        <Button
+          onClick={onValidate}
+          positive
+          labelPosition="right"
+          icon="checkmark"
+          content="Valider"
+        />
+      </Modal.Actions>
+    </Modal>
+  );
+};
+
+Parameters.propTypes = {
+  initialParametersValue: instanceOf(Map).isRequired, // Map
+  open: bool.isRequired,
+  close: func.isRequired,
+};
+
+export default Parameters;

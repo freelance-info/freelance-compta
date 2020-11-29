@@ -14,7 +14,7 @@ win:
 linux:
   target: AppImage
   category: Office
-  icon: public/favicon.ico
+  icon: public/logo.png
 mac:
   target: zip
   icon: public/favicon.ico

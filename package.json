@@ -3,8 +3,12 @@
   "version": "0.1.1",
   "homepage": "./",
   "private": true,
+  "author": {
+    "name": "Benjamin CAURE",
+    "email": "benjamin.caure@gmail.com"
+  },
   "dependencies": {
-    "@craco/craco": "^5.6.2",
+    "@craco/craco": "^5.7.0",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
@@ -13,23 +17,25 @@
     "env-cmd": "^10.0.1",
     "fs": "0.0.1-security",
     "npm-watch": "^0.6.0",
-    "react": "^16.12.0",
-    "react-dom": "^16.12.0",
-    "react-scripts": "3.3.0",
+    "prop-types": "^15.7.2",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
+    "react-scripts": "3.4.3",
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^0.88.2",
     "typescript": "^3.7.5"
   },
   "scripts": {
-    "start": "concurrently --kill-others \"env-cmd -f .env.electron craco start\" \"wait-on tcp:3000 && electron src/main.js\"",
+    "start": "concurrently --kill-others \"BROWSER=none craco start\" \"wait-on tcp:3000 && env-cmd -r .env.electron -e development electron src/main.js\"",
     "start:web": "env-cmd -f .env.web craco start",
     "start:electron-react": "craco start",
     "start:electron-dev": "wait-on tcp:3000 && electron src/main.js",
     "build:web": "craco build",
-    "build:electron": "env-cmd -f .env.electron craco build",
+    "build:electron": "env-cmd -r .env.electron -e production craco build",
     "eject": "react-scripts eject",
     "pack": "electron-builder --dir",
-    "dist:win-linux": "electron-builder --win --linux",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux",
     "dist:mac": "electron-builder --mac"
   },
   "eslintConfig": {
@@ -45,6 +51,12 @@
     "concurrently": "^5.1.0",
     "electron": "^7.1.11",
     "electron-builder": "^22.3.2",
+    "eslint": "6.6.0",
+    "eslint-config-airbnb": "^18.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-react": "^7.21.4",
+    "eslint-plugin-react-hooks": "^4.1.2",
     "wait-on": "^4.0.0"
   },
   "main": "electron.js",
@@ -58,7 +70,7 @@
     "linux": {
       "target": "AppImage",
       "category": "Office",
-      "icon": "public/favicon.ico"
+      "icon": "public/logo.png"
     },
     "mac": {
       "target": "zip",

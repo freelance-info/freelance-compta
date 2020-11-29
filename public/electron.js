@@ -5,38 +5,45 @@ const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
 const path = require('path');
-const url = require('url');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow;
+const windowContainer = { ref: null };
 
-function createWindow() {
+const createWindow = (container) => {
     // Create the browser window.
-    mainWindow = new BrowserWindow({width: 800, height: 600, webPreferences: { nodeIntegration: true }});
+    browserWindow = new BrowserWindow({show: false, webPreferences: { nodeIntegration: true }});
+    browserWindow.maximize();
+    browserWindow.show();
 
 
     // and load the index.html of the app.
-    console.log(__dirname);
-    // mainWindow.loadURL('http://localhost:3000');
-    mainWindow.loadFile(path.join(__dirname, "../build/index.html"));
+    if (process.env.REACT_APP_URL) {
+        browserWindow.loadURL(process.env.REACT_APP_URL);
+    } else {
+        browserWindow.loadFile(path.join(__dirname, "../build/index.html"));
+    }
 
     // Open the DevTools.
-    mainWindow.webContents.openDevTools();
+    if (process.env.CHROME_DEV_TOOLS && process.env.CHROME_DEV_TOOLS === 'true') {
+        browserWindow.webContents.openDevTools();
+    }
 
     // Emitted when the window is closed.
-    mainWindow.on('closed', function () {
+    browserWindow.on('closed', () => {
         // Dereference the window object, usually you would store windows
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
-        mainWindow = null
-    })
-}
+        container.ref = null
+    });
+
+    return browserWindow;
+};
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', () => { windowContainer.ref = createWindow(windowContainer); });
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
@@ -50,10 +57,12 @@ app.on('window-all-closed', function () {
 app.on('activate', function () {
     // On OS X it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (mainWindow === null) {
-        createWindow()
+    if (windowContainer.ref === null) {
+        windowContainer.ref = createWindow();
     }
 });
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+module.exports.windowContainer = windowContainer;
