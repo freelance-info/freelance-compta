@@ -12,7 +12,13 @@ const windowContainer = { ref: null };
 
 const createWindow = (container) => {
     // Create the browser window.
-    browserWindow = new BrowserWindow({show: false, webPreferences: { nodeIntegration: true }});
+    browserWindow = new BrowserWindow({
+        show: false,
+        icon:__dirname + '/icon.png',
+        webPreferences: {
+            nodeIntegration: true
+        }
+    });
     browserWindow.maximize();
     browserWindow.show();
 

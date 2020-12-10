@@ -1,9 +1,9 @@
 version: 0.1.1
 files:
   - url: compta.AppImage
-    sha512: phTcPvmGo9pzsJXaqAhZg9s7xh7PCzLiMKZiiZ9NlEPPFjBsxxyAlk4wxyGXlIyF1pTG1DsE62M5txS+pL1WGA==
-    size: 109364590
-    blockMapSize: 116098
+    sha512: AfOK3dnJ8w36CHx2By3y4JMO58L0uTRPso+8RDESKpAxsoH3ZjqsNa6ogCw0V0lNhN4oheAddyT84Q0S/IWQjA==
+    size: 109384992
+    blockMapSize: 116020
 path: compta.AppImage
-sha512: phTcPvmGo9pzsJXaqAhZg9s7xh7PCzLiMKZiiZ9NlEPPFjBsxxyAlk4wxyGXlIyF1pTG1DsE62M5txS+pL1WGA==
-releaseDate: '2020-11-08T14:46:41.495Z'
+sha512: AfOK3dnJ8w36CHx2By3y4JMO58L0uTRPso+8RDESKpAxsoH3ZjqsNa6ogCw0V0lNhN4oheAddyT84Q0S/IWQjA==
+releaseDate: '2020-12-10T21:24:24.007Z'

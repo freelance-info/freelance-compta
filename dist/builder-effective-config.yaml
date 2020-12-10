@@ -1,23 +1,24 @@
 directories:
   output: dist
-  buildResources: assets
+  buildResources: public
 files:
   - filter:
       - build/**/*
+      - public/**
 extraMetadata:
   main: build/electron.js
+asarUnpack:
+  - public/**
 artifactName: '${productName}.${ext}'
 win:
   publisherName: github.com/freelance-info
   target: portable
-  icon: public/favicon.ico
 linux:
   target: AppImage
   category: Office
-  icon: public/logo.png
+  icon: icon.png
 mac:
   target: zip
-  icon: public/favicon.ico
   category: Finance
 extends: react-cra
 electronVersion: 7.1.11
