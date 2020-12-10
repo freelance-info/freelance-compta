@@ -4,7 +4,7 @@ import { Checkbox } from 'semantic-ui-react';
 import { HeaderCell } from './HeaderCell';
 import { FooterCell } from './FooterCell';
 import { Row } from './Row';
-import { computeTotals, computeLineKey } from '../reducers/computations';
+import { computeTotals } from '../reducers/computations';
 
 export const Table = ({cols, lines, rowChange, selectedLines, allSelected, select, selectAll, highlightedLines, sort, onSort, errors}) => {
   const headerCells = cols.map(col => (
