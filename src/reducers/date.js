@@ -7,8 +7,7 @@ export function parseDate(dateString) {
     if (values.length !== 3) {
       return new Date(dateString);
     }
-    const result = new Date('1970-01-01');
-    result.setFullYear(values[2], values[1] - 1, values[0]);
+    const result = new Date(`${values[2]}-${values[0]}-${values[1]}`);
     return result;
   } catch (error) {
     return null;

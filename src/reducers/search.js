@@ -22,14 +22,15 @@ export const searchLines = (lines, searchText, searchColId, searchResults) => {
         newSearchResults.push(index);
       }
     });
-  }
-  if (searchResults.length > 0) {
+  } else {
     newSearchResults = [...searchResults];
   }
-  const lineIndex = newSearchResults.shift();
-  const cellId = `#body-cell-${lineIndex}-${searchColId}`;
-  scrollTo('#ledger-scrollable-container', cellId);
   document.querySelectorAll('input').forEach(input => { input.style.backgroundColor = 'transparent'; });
-  document.querySelector(cellId).querySelector('input').style.backgroundColor = 'yellow';
+  if (newSearchResults.length > 0) {
+    const lineIndex = newSearchResults.shift();
+    const cellId = `#body-cell-${lineIndex}-${searchColId}`;
+    scrollTo('#ledger-scrollable-container', cellId);
+    document.querySelector(cellId).querySelector('input').style.backgroundColor = 'yellow';
+  }
   return newSearchResults;
 };
