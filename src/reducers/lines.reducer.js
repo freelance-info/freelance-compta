@@ -17,14 +17,17 @@ export const linesInitialState = {
   lines: [],
   selectedLines: [],
   highlightedLines: [],
+  unsaved: false,
 };
 
-export const linesReducer = ({ lines, selectedLines, highlightedLines, cols }, action) => {
+export const linesReducer = ({ lines, selectedLines, highlightedLines, cols, unsaved }, action) => {
+  // console.log(`linesReducer: ${JSON.stringify(action)}`);
   // By default copy initial state
   const newCols = [...cols];
   let newSelectedLines = [...selectedLines];
   let newLines = [...lines];
   let newHighlightedLines = [...highlightedLines];
+  let newUnsaved = unsaved;
 
   switch (action.type) {
     case 'initCols':
@@ -48,12 +51,14 @@ export const linesReducer = ({ lines, selectedLines, highlightedLines, cols }, a
         const tva = newLines[action.lineNumber].tva / 100;
         newLines[action.lineNumber].ttc = Math.round(action.val * (1 + tva) * 100) / 100;
       }
+      newUnsaved = true;
       break;
     case 'addLine':
       newLines.push({});
       cols.forEach(col => { newLines[newLines.length - 1][col.id] = col.defaultValue; });
       newHighlightedLines.push(newLines.length - 1);
       newSelectedLines = [];
+      newUnsaved = true;
       break;
     case 'select':
       if (action.checked) {
@@ -78,6 +83,7 @@ export const linesReducer = ({ lines, selectedLines, highlightedLines, cols }, a
       });
       newSelectedLines = [];
       newHighlightedLines = [];
+      newUnsaved = true;
       break;
     case 'duplicateSelected':
       lines.forEach((line, index) => {
@@ -88,12 +94,19 @@ export const linesReducer = ({ lines, selectedLines, highlightedLines, cols }, a
         }
       });
       newSelectedLines = [];
+      newUnsaved = true;
       break;
     case 'sortLines':
       sortByCol(newLines, action.clickedColumn, action.direction);
       break;
+    case 'unsaved':
+      newUnsaved = true;
+      break;
+    case 'saved':
+      newUnsaved = false;
+      break;
     default:
       throw new Error();
   }
-  return { cols: newCols, lines: newLines, selectedLines: newSelectedLines, highlightedLines: newHighlightedLines };
+  return { cols: newCols, lines: newLines, selectedLines: newSelectedLines, highlightedLines: newHighlightedLines, unsaved: newUnsaved };
 };

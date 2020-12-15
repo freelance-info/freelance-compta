@@ -19,6 +19,7 @@ const AccountLedger = ({ parameters, fileChange }) => {
     highlightedLines,
     lines,
     cols,
+    unsaved,
   }, dispatchLinesAction] = useReducer(linesReducer, linesInitialState);
 
   /** ****** SELECTED LINES ACTIONS  */
@@ -122,6 +123,12 @@ const AccountLedger = ({ parameters, fileChange }) => {
   /** *************** */
 
   /*********** FILES *************** */
+  const onNew = () => {
+    localStorage.removeItem('accountLedger');
+    setCurrentFile(null);
+    dispatchLinesAction({ type: 'initLines', initLines: [] });
+  };
+
   const onOpen = () => {
     open(currentFile, setCurrentFile, fileChange, setActionMessage, lines, cols)
       .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }));
@@ -129,13 +136,15 @@ const AccountLedger = ({ parameters, fileChange }) => {
 
   const onSaveAs = () => checkErrors()
     .then(() => saveAs(currentFile, setCurrentFile, fileChange, lines, cols, setActionMessage))
-    .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }));
+    .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }))
+    .then(() => dispatchLinesAction({ type: 'saved' }));
 
   const onSave = () => {
     if (currentFile) {
       checkErrors()
         .then(() => save(currentFile, lines, cols, setActionMessage))
-        .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }));
+        .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }))
+        .then(() => dispatchLinesAction({ type: 'saved' }));
     } else {
       // If this is the 1st time app is launched, there is no currentFile: run saveAs
       onSaveAs();
@@ -145,7 +154,7 @@ const AccountLedger = ({ parameters, fileChange }) => {
   return (
     <article>
       <section className="buttons-bar border-bottom">
-        <FileButtons onOpen={onOpen} onSave={onSave} onSaveAs={onSaveAs} />
+        <FileButtons hasUnsavedChanges={unsaved} onNew={onNew} onOpen={onOpen} onSave={onSave} onSaveAs={onSaveAs} />
         {actionMessage && <Message type={actionMessage.type} message={actionMessage.message} />}
         <Search cols={cols} onChange={() => setSearchResults([])} onSearchClick={(text, option) => search(text, option)} />
       </section>
