@@ -39,6 +39,7 @@ const FileButtons = ({ hasUnsavedChanges, onNew, onOpen, onSave, onSaveAs }) => 
       title="Enregistrer"
     >
       <i aria-hidden="true" className="save icon" />
+      { hasUnsavedChanges && <sup>●</sup> }
     </button>
   );
   const saveAsButton = (
@@ -49,7 +50,7 @@ const FileButtons = ({ hasUnsavedChanges, onNew, onOpen, onSave, onSaveAs }) => 
       onClick={onSaveAs}
       title="Enregistrer sous"
     >
-      <i aria-hidden="true" className="save outline icon" />
+      <i aria-hidden="true" className="clone icon" />
     </button>
   );
 
