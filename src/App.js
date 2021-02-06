@@ -7,10 +7,15 @@ import { PARAMETER_KEYS, PARAMETER_ENTREPRISE_NAME } from './reducers/globals';
 class App extends React.Component {
   constructor(props) {
     super(props);
+    let version = '';
+    if (window && window.require) {
+      version = window.require('electron')?.remote?.app?.getVersion();
+    }
     this.state = {
       parameters: new Map(),
       showParam: false,
       tabFiles: [],
+      version 
     };
     this.onSaveParameters = this.onSaveParameters.bind(this);
     this.onTabFilesChange = this.onTabFilesChange.bind(this);
@@ -58,7 +63,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { parameters, showParam, tabFiles } = this.state;
+    const { parameters, showParam, tabFiles, version } = this.state;
 
     // Tabs
     const displayableTabFiles = tabFiles.map(tabFile => tabFile.replace(new RegExp('^.*[\\/]'), ''));
@@ -77,7 +82,7 @@ class App extends React.Component {
       <main style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', alignSelf: 'flex-end', marginBottom: '-35px' }}>
           <div style={{ marginRight: '10px', display: 'flex', alignItems: 'center' }}>
-              Version {window?.require('electron')?.remote?.app?.getVersion()}
+              Version {version}
           </div>
           <button
             type="button"
