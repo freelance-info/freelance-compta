@@ -20,7 +20,7 @@ const Parameters = ({
   const onValidate = () => {
     let allFieldsOk = true;
     PARAMETER_KEYS.forEach((_value, parameterKey) => {
-      if (!parameterValues.get(parameterKey)) {
+      if (parameterValues.get(parameterKey) === null || parameterValues.get(parameterKey) === undefined) {
         setErrorMessage('Vous devez remplir tous les champs.');
         allFieldsOk = false;
       }
