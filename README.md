@@ -11,7 +11,7 @@ Idéal pour les freelances qui souhaitent une base simple (**React.js**) à cust
 Télécharger la dernière release depuis [Github](https://github.com/freelance-info/freelance-compta/releases)
 
  - Windows: 
-   - copier *compta.exe* dans un autre répertoire que *Téléchargements", par exemple le bureau.
+   - copier *freelance_compta.exe* dans un autre répertoire que *Téléchargements", par exemple le bureau.
    - exécuter le fichier; étant donné qu'il n'est pas signé, cliquer sur "en savoir plus" puis "exécuter quand même"
  - Linux exécuter l'AppImage ([?](https://docs.appimage.org/introduction/quickstart.html#ref-quickstart))
 
@@ -22,6 +22,9 @@ Télécharger la dernière release depuis [Github](https://github.com/freelance-
 Le fonctionnement reste très proche d'une feuille Excel avec :
 - une aide à la saisie pour les clients / objets de prestation / mode de règlement
 - une sélection de facture émises pour remplir automatiquement les lignes de compte
+
+Référence sur le site du gouvernement:
+https://www.service-public.fr/professionnels-entreprises/vosdroits/R54994
 
 ## 2ème obligation légale : le _Registre des achats_
 

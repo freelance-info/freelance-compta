@@ -1,5 +1,6 @@
 {
-  "name": "compta",
+  "name": "freelance_compta",
+  "description": "Simplified accounting software for freelancers",
   "version": "0.1.3",
   "homepage": "./",
   "private": true,
