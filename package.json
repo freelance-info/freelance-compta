@@ -1,6 +1,7 @@
 {
-  "name": "compta",
-  "version": "0.1.1",
+  "name": "freelance_compta",
+  "description": "Simplified accounting software for freelancers",
+  "version": "0.1.3",
   "homepage": "./",
   "private": true,
   "author": {
@@ -29,7 +30,7 @@
     "start": "concurrently --kill-others \"BROWSER=none craco start\" \"wait-on tcp:3000 && env-cmd -r .env.electron -e development electron src/main.js\"",
     "start:web": "env-cmd -f .env.web craco start",
     "start:electron-react": "craco start",
-    "start:electron-dev": "wait-on tcp:3000 && electron src/main.js",
+    "start:electron-dev": "wait-on tcp:3000 && env-cmd -r .env.electron -e development electron src/main.js",
     "build:web": "craco build",
     "build:electron": "env-cmd -r .env.electron -e production craco build",
     "eject": "react-scripts eject",
@@ -49,7 +50,7 @@
   ],
   "devDependencies": {
     "concurrently": "^5.1.0",
-    "electron": "^7.1.11",
+    "electron": "^9.4.0",
     "electron-builder": "^22.3.2",
     "eslint": "6.6.0",
     "eslint-config-airbnb": "^18.2.0",
@@ -66,7 +67,7 @@
     ],
     "asarUnpack": [
       "public/**"
-    ], 
+    ],
     "directories": {
       "buildResources": "public"
     },

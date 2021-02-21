@@ -21,4 +21,4 @@ mac:
   target: zip
   category: Finance
 extends: react-cra
-electronVersion: 7.1.11
+electronVersion: 9.4.0

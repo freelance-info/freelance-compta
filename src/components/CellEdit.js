@@ -56,7 +56,7 @@ const CellEdit = ({ def, value, onChange }) => {
           compact
           style={{ width: def.width }}
           options={def.options}
-          value={value || def.defaultValue}
+          value={value === null || value === undefined ? def.defaultValue : value}
           onChange={(_event, { value: val }) => onChange(val)}
         />
       );

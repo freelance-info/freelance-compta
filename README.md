@@ -1,23 +1,19 @@
-# Comptabilité pour Micro-Entreprise
+# Comptabilité pour Micro-Entreprise sous Linux et Windows
 
 Logiciel de comptabilité minimal pour être **conforme à la réglementation française** des micro-entreprises BNC.
-Idéal pour les développeur freelance qui souhaitent une base simple (**React.js**) à customiser.
+Les données sont enregistrées en CSV.
+Idéal pour les freelances qui souhaitent une base simple (**React.js**) à customiser.
 
 ![Minion](./compta.png)
 
 # Quick start
 
-## Windows
+Télécharger la dernière release depuis [Github](https://github.com/freelance-info/freelance-compta/releases)
 
-Télécharger et décompresser la version portable electron-builder/dist/compta.exe
-
-## MacOS
-
-Télécharger et décompresser le zip 
-
-## Linux
-
-Télécharger et décompresser [l'AppImage](https://docs.appimage.org/introduction/quickstart.html#ref-quickstart)
+ - Windows: 
+   - copier *freelance_compta.exe* dans un autre répertoire que *Téléchargements", par exemple le bureau.
+   - exécuter le fichier; étant donné qu'il n'est pas signé, cliquer sur "en savoir plus" puis "exécuter quand même"
+ - Linux exécuter l'AppImage ([?](https://docs.appimage.org/introduction/quickstart.html#ref-quickstart))
 
 # Documentation utilisateur
 
@@ -26,6 +22,9 @@ Télécharger et décompresser [l'AppImage](https://docs.appimage.org/introducti
 Le fonctionnement reste très proche d'une feuille Excel avec :
 - une aide à la saisie pour les clients / objets de prestation / mode de règlement
 - une sélection de facture émises pour remplir automatiquement les lignes de compte
+
+Référence sur le site du gouvernement:
+https://www.service-public.fr/professionnels-entreprises/vosdroits/R54994
 
 ## 2ème obligation légale : le _Registre des achats_
 
@@ -67,7 +66,9 @@ npm install --global --production windows-build-tools
 
 2. Installer les dépendances : `npm install`
 
-3. `npm run start` : lance en parallèle le front React (pour le livereload) et la fenêtre Electron 
+3. Linux: `npm run start` : lance en parallèle le front React (pour le livereload) et la fenêtre Electron 
+Windows: lancer séparément `npm run start:electron-react` puis `npm run start:eletron-dev`
+
 
 ## Packaging
 
@@ -81,9 +82,9 @@ Logiciel minimaliste mais méta-données et modèle de documents extensibles à 
 
 Logiciel standalone développé en Javascript (**reactjs** + **electron**), compatible Windows, Linux et Mac.
 
-Ce qu'il a de plus que tous les autres ? Il est bien documenté, fonctionne sur la stack la plus populaire, comporte peu de code et complètement transparent. Il est donc facile de monter à bord et je vous encourage à le forker si vous souhaitez le personnaliser. 
-
-N'hésitez pas soumettre toute demande d'évolution, bug ou contribution! 
+Ce qu'il a de plus que tous les autres ? 
+Il fonctionne avec de simples fichiers CSV. Ce qui veut dire que vous pouvez à tout moment changer de logiciel très facilement.
+De plus il les développeur pourront le personnalier facilement (stack la plus populaire, peu de code). Je vous encourage à le forker et à soumettre des Pull-Requests. 
 
 Pensez à lui mettre une petite étoile si cette initiative vous plaît!
 
