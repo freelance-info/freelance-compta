@@ -5,8 +5,8 @@ import { Checkbox } from 'semantic-ui-react';
 
 export const Row = ({cols, line, lineNumber, errors, highlightedLines, selectedLines, select, rowChange}) => {
   // Return error message to display if any for given line / column
-  const getErrorMsg = (lineNumber, errorLines, col) => {
-    const error = errorLines.filter(err => err.lineNumber === lineNumber);
+  const getErrorMsg = (lineNum, errorLines, col) => {
+    const error = errorLines.filter(err => err.lineNumber === lineNum);
     if (error.length === 0) {
       return null;
     }
@@ -21,13 +21,16 @@ export const Row = ({cols, line, lineNumber, errors, highlightedLines, selectedL
     const errorMsg = getErrorMsg(lineNumber, errors, col);
     return (
       <td key={key} id={key} className={errorMsg ? 'error' : ''}>
-        <CellEdit
-          key={`cell-edit-${key}`}
-          id={`cell-edit-${key}`}
-          def={col}
-          value={line[col.id]}
-          onChange={val => rowChange(lineNumber, col, val)}
-        />
+        { 
+          rowChange && 
+          <CellEdit
+            key={`cell-edit-${key}`}
+            id={`cell-edit-${key}`}
+            def={col}
+            value={line[col.id]}
+            onChange={val => rowChange(lineNumber, col, val)}
+          />
+        }
         {errorMsg || ''}
       </td>
     );
@@ -37,12 +40,15 @@ export const Row = ({cols, line, lineNumber, errors, highlightedLines, selectedL
       key={`body-line-${lineNumber}`}
       className={highlightedLines.includes(lineNumber) ? 'positive' : ''}
     >
-      <td key={`body-check-${lineNumber}`}>
-        <Checkbox
-          checked={selectedLines.some(selectedLine => selectedLine === lineNumber)}
-          onChange={(e, { checked }) => select(lineNumber, checked)}
-        />
-      </td>
+      { 
+        select &&
+        <td key={`body-check-${lineNumber}`}>
+          <Checkbox
+            checked={selectedLines.some(selectedLine => selectedLine === lineNumber)}
+            onChange={(e, { checked }) => select(lineNumber, checked)}
+          />
+        </td>
+      }
       {td}
     </tr>
   );
@@ -74,7 +80,5 @@ Row.propTypes = {
 Row.defaultProps = {
   errors: [],
   highlightedLines: [],
-  selectedLines: [],
-  select: () => {},
-  rowChange: () => {},
+  selectedLines: []
 };

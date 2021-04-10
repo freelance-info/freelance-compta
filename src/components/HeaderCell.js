@@ -16,8 +16,8 @@ HeaderCell.propTypes = {
     id: PropTypes.string.isRequired
   }).isRequired,
   sort: shape({
-    column: PropTypes.string.isRequired,
-    direction: PropTypes.string.isRequired,
+    column: PropTypes.string,
+    direction: PropTypes.string,
   }),
   onSort: PropTypes.func,
 };

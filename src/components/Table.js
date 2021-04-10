@@ -39,12 +39,15 @@ export const Table = ({cols, lines, rowChange, selectedLines, allSelected, selec
     <table className="ui table small compact brown sortable">
       <thead>
         <tr>
-          <th key="header-check">
-            <Checkbox
-              checked={allSelected}
-              onChange={(_e, { checked }) => selectAll(checked)}
-            />
-          </th>
+          { 
+            select &&
+            <th key="header-check">
+              <Checkbox
+                checked={allSelected}
+                onChange={(_e, { checked }) => selectAll(checked)}
+              />
+            </th>
+          }
           {headerCells}
         </tr>
       </thead>

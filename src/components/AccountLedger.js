@@ -8,12 +8,14 @@ import Message from './Message';
 import Search from './Search';
 import FileButtons from './FileButtons';
 import { Table } from './Table';
+import { Reporting } from './Reporting';
 
 // Livre des recettes
 const AccountLedger = ({ parameters, fileChange }) => {
   // Column metadata definition
   const storedCurrentFile = localStorage.getItem('accountLedger');
   const [currentFile, setCurrentFile] = useState(undefined);
+  const [showReporting, setShowReporting] = useState(false);
   const [{
     selectedLines,
     highlightedLines,
@@ -41,6 +43,10 @@ const AccountLedger = ({ parameters, fileChange }) => {
 
   const duplicateLines = () => {
     dispatchLinesAction({ type: 'duplicateSelected' });
+  };
+
+  const reporting = () => {
+    setShowReporting(true);
   };
   /** ******************* */
 
@@ -188,7 +194,6 @@ const AccountLedger = ({ parameters, fileChange }) => {
             onClick={removeLines}
           >
             <i aria-hidden="true" className="trash icon" />
-            {' '}
             Supprimer les lignes
           </button>
           <button
@@ -198,11 +203,19 @@ const AccountLedger = ({ parameters, fileChange }) => {
             onClick={duplicateLines}
           >
             <i aria-hidden="true" className="copy icon" />
-            {' '}
             Dupliquer les lignes
+          </button>
+          <button
+            type="button"
+            className="ui icon button secondary"
+            onClick={reporting}
+          >
+            <i aria-hidden="true" className="copy icon" />
+            Rapports
           </button>
         </div>
       </section>
+      <Reporting open={showReporting} setOpen={setShowReporting} cols={cols} lines={lines} />
     </article>
   );
 };
