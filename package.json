@@ -27,7 +27,7 @@
     "typescript": "^3.7.5"
   },
   "scripts": {
-    "start": "concurrently --kill-others \"BROWSER=none craco start\" \"wait-on tcp:3000 && env-cmd -r .env.electron -e development electron src/main.js\"",
+    "start": "concurrently --kill-others \"env-cmd -r .env.electron -e development craco start\" \"wait-on tcp:3000 && env-cmd -r .env.electron -e development electron src/main.js\"",
     "start:web": "env-cmd -f .env.web craco start",
     "start:electron-react": "craco start",
     "start:electron-dev": "wait-on tcp:3000 && env-cmd -r .env.electron -e development electron src/main.js",
