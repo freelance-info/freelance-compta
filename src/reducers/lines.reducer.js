@@ -1,5 +1,5 @@
-import { PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA, PARAMETER_DEFAULT_DEBIT_ACCOUNT, PARAMETER_DEFAULT_CREDIT_ACCOUNT, PARAMETER_KEYS } from './globals';
-import { sortByCol } from './sort';
+import { PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA, PARAMETER_DEFAULT_DEBIT_ACCOUNT, PARAMETER_DEFAULT_CREDIT_ACCOUNT, PARAMETER_KEYS } from '../utils/globals';
+import { sortByCol } from '../utils/sort';
 
 export const linesInitialState = {
   cols: [

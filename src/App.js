@@ -1,8 +1,8 @@
 import React from 'react';
-import { Tab } from 'semantic-ui-react';
+import { Tab, Menu } from 'semantic-ui-react';
 import AccountLedger from './components/AccountLedger';
 import Parameters from './components/Parameters';
-import { PARAMETER_KEYS, PARAMETER_ENTREPRISE_NAME } from './reducers/globals';
+import { PARAMETER_KEYS, PARAMETER_ENTREPRISE_NAME } from './utils/globals';
 
 class App extends React.Component {
   constructor(props) {
@@ -45,7 +45,10 @@ class App extends React.Component {
     if (parameters.has(PARAMETER_ENTREPRISE_NAME)) {
       title += ` de ${parameters.get(PARAMETER_ENTREPRISE_NAME)}`;
     }
-    document.querySelector('title').innerText = title;
+    const titleElement = document.querySelector('title');
+    if (titleElement && titleElement.innerText) {
+      titleElement.innerText = title;
+    }
   }
 
   onSaveParameters(parametersValue) {
@@ -66,7 +69,11 @@ class App extends React.Component {
     const { parameters, showParam, tabFiles, version } = this.state;
 
     // Tabs
-    const displayableTabFiles = tabFiles.map(tabFile => tabFile.replace(new RegExp('^.*[\\/]'), ''));
+    const displayableTabFiles = tabFiles.map(tabFile => (
+        <Menu.Item key={tabFile} title={tabFile}>
+          { new URL(tabFiles).pathname.split("/").pop() }
+        </Menu.Item>
+    ));
     const panes = [
       {
         menuItem: displayableTabFiles[0],

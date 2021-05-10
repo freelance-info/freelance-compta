@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useReducer } from 'react';
 import { instanceOf, func } from 'prop-types';
-import { searchLines } from '../reducers/search';
-import { open, saveAs, save, readData } from '../reducers/csv';
+import { searchLines } from '../utils/search';
+import { open, saveAs, save, readData } from '../utils/csv';
 import { linesReducer, linesInitialState } from '../reducers/lines.reducer';
-import { scrollToBottom, scrollTo } from '../reducers/scroll';
+import { scrollToBottom, scrollTo } from '../utils/scroll';
 import Message from './Message';
 import Search from './Search';
 import FileButtons from './FileButtons';
@@ -182,15 +182,17 @@ const AccountLedger = ({ parameters, fileChange }) => {
       </section>
       <section className="buttons-bar border-top">
         <div>
-          <button type="button" className="ui icon button primary" onClick={addLine}>
+          <button
+            type="button"
+            className="ui icon button primary labeled"
+            onClick={addLine}>
             <i aria-hidden="true" className="plus icon" />
-            {' '}
             Nouvelle ligne
           </button>
           <button
             type="button"
             disabled={selectedLines.length === 0}
-            className="ui icon button red"
+            className="ui icon button red labeled"
             onClick={removeLines}
           >
             <i aria-hidden="true" className="trash icon" />
@@ -199,7 +201,7 @@ const AccountLedger = ({ parameters, fileChange }) => {
           <button
             type="button"
             disabled={selectedLines.length === 0}
-            className="ui icon button secondary"
+            className="ui icon button secondary labeled"
             onClick={duplicateLines}
           >
             <i aria-hidden="true" className="copy icon" />
@@ -207,10 +209,10 @@ const AccountLedger = ({ parameters, fileChange }) => {
           </button>
           <button
             type="button"
-            className="ui icon button secondary"
+            className="ui icon button secondary labeled"
             onClick={reporting}
           >
-            <i aria-hidden="true" className="copy icon" />
+            <i aria-hidden="true" className="table icon" />
             Rapports
           </button>
         </div>

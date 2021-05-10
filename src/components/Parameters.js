@@ -3,7 +3,7 @@ import {
   Modal, Form, Button, Select,
 } from 'semantic-ui-react';
 import { func, instanceOf, bool } from 'prop-types';
-import { PARAMETER_KEYS } from '../reducers/globals';
+import { PARAMETER_KEYS } from '../utils/globals';
 import Logo from '../Logo/Logo';
 
 const Parameters = ({

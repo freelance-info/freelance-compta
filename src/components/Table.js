@@ -4,7 +4,7 @@ import { Checkbox } from 'semantic-ui-react';
 import { HeaderCell } from './HeaderCell';
 import { FooterCell } from './FooterCell';
 import { Row } from './Row';
-import { computeTotals } from '../reducers/computations';
+import { computeTotals } from '../utils/computations';
 
 export const Table = ({cols, lines, rowChange, selectedLines, allSelected, select, selectAll, highlightedLines, sort, onSort, errors}) => {
   const headerCells = cols.map(col => (
@@ -81,8 +81,8 @@ Table.propTypes = {
   allSelected: PropTypes.bool,
   selectAll: PropTypes.func, 
   sort: shape({
-    column: PropTypes.string.isRequired,
-    direction: PropTypes.string.isRequired,
+    column: PropTypes.string,
+    direction: PropTypes.string,
   }),
   onSort: PropTypes.func,
   errors: PropTypes.arrayOf(PropTypes.shape({
