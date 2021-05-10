@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tab, Menu } from 'semantic-ui-react';
-import AccountLedger from './components/AccountLedger';
+import Main from './components/Main';
 import Parameters from './components/Parameters';
 import { PARAMETER_KEYS, PARAMETER_ENTREPRISE_NAME } from './utils/globals';
 
@@ -85,7 +85,7 @@ class App extends React.Component {
         menuItem: displayableTabFiles[0] || 'Nouveau fichier',
         render: () => (
           <Tab.Pane style={{ overflowX: 'auto' }}>
-            <AccountLedger key="account-ledger" parameters={parameters} fileChange={this.onTabFilesChange} />
+            <Main key="account-ledger" parameters={parameters} fileChange={this.onTabFilesChange} />
           </Tab.Pane>
         ),
       },

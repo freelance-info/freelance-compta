@@ -11,7 +11,7 @@ import { Table } from './Table';
 import { Reporting } from './Reporting';
 
 // Livre des recettes
-const AccountLedger = ({ parameters, fileChange }) => {
+const Main = ({ parameters, fileChange }) => {
   // Column metadata definition
   const storedCurrentFile = localStorage.getItem('accountLedger');
   const [currentFile, setCurrentFile] = useState(undefined);
@@ -223,9 +223,9 @@ const AccountLedger = ({ parameters, fileChange }) => {
   );
 };
 
-AccountLedger.propTypes = {
+Main.propTypes = {
   parameters: instanceOf(Map).isRequired,
   fileChange: func.isRequired,
 };
 
-export default AccountLedger;
+export default Main;
