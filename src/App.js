@@ -69,14 +69,20 @@ class App extends React.Component {
     const { parameters, showParam, tabFiles, version } = this.state;
 
     // Tabs
-    const displayableTabFiles = tabFiles.map(tabFile => (
-        <Menu.Item key={tabFile} title={tabFile}>
-          { new URL(tabFiles).pathname.split("/").pop() }
-        </Menu.Item>
-    ));
+    const displayableTabFiles = tabFiles.map(tabFile => {
+      if (tabFile) {
+        return (
+          <Menu.Item key={tabFile} title={tabFile}>
+            { new URL(tabFile).pathname.split("/").pop()}
+          </Menu.Item>
+        );
+      } else {
+        return undefined;
+      }
+    });
     const panes = [
       {
-        menuItem: displayableTabFiles[0],
+        menuItem: displayableTabFiles[0] || 'Nouveau fichier',
         render: () => (
           <Tab.Pane style={{ overflowX: 'auto' }}>
             <AccountLedger key="account-ledger" parameters={parameters} fileChange={this.onTabFilesChange} />

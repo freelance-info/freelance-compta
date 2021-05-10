@@ -132,6 +132,7 @@ const AccountLedger = ({ parameters, fileChange }) => {
   const onNew = () => {
     localStorage.removeItem('accountLedger');
     setCurrentFile(null);
+    fileChange(null);
     dispatchLinesAction({ type: 'initLines', initLines: [] });
   };
 

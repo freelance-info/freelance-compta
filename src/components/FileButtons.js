@@ -12,7 +12,7 @@ const FileButtons = ({ hasUnsavedChanges, onNew, onOpen, onSave, onSaveAs }) => 
       key="newButton"
       type="button"
       className="ui icon button green"
-      onClick={() => newButtonClick}
+      onClick={newButtonClick}
       title="Nouveau"
     >
       <i aria-hidden="true" className="file outline icon" />
