@@ -27,3 +27,6 @@ yarn-error.log*
 /dist/*.AppImage
 /dist/*.exe
 /dist/*.exe.blockmap
+
+# we use npm not yarn
+yarn.lock
