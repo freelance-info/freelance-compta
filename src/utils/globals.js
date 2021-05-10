@@ -11,7 +11,7 @@ PARAMETER_KEYS.set(PARAMETER_DEFAULT_TVA, [
   { key: '10', text: '10%', value: '10' },
   { key: '5.5', text: '5,5%', value: '5.5' },
   { key: '2.1', text: '2,1%', value: '2.1' },
-  { key: '0', text: '0%', value: 0},
+  { key: '0', text: '0%', value: '0'},
 ]);
 PARAMETER_KEYS.set(PARAMETER_DEFAULT_CASHING, [
   { key: 'Virement', text: 'Virement', value: 'Virement' },

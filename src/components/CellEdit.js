@@ -29,7 +29,7 @@ const CellEdit = ({ def, value, onChange }) => {
             step="100"
             style={{ maxWidth: def.width }}
             placeholder={def.title}
-            value={value || ''}
+            value={value === null || value === undefined ? '' : value}
             onChange={event => onChange(event.target.value)}
           />
           <div className="ui basic label">€</div>
