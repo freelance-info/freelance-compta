@@ -1,6 +1,6 @@
-import {useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 
-export const Tva = (cols, lines) => {
+export const Reports = (cols, lines) => {
 
   const dateCol = cols.find(col => col.type === 'Date').id;
   const dateMin = lines.reduce((min, line) => !min || (line[dateCol] && line[dateCol] < min) ? line[dateCol] : min, null);
@@ -13,11 +13,11 @@ export const Tva = (cols, lines) => {
   const onStartDateChange = newDate => setStartDate(newDate);
   const onEndDateChange = newDate => setEndDate(newDate);
 
-  useEffect(() => {
-    setFilteredLines(lines.filter(line => line[dateCol] && line[dateCol] > stardDate && line[dateCol] <= endDate));
-  }, [cols, lines, startDate, endDate]);
+  const
 
-  
+    useEffect(() => {
+      setFilteredLines(lines.filter(line => line[dateCol] && line[dateCol] > stardDate && line[dateCol] <= endDate));
+    }, [cols, lines, startDate, endDate]);
 
   return (
     <section>
@@ -33,7 +33,7 @@ export const Tva = (cols, lines) => {
           />
         </label>
         <label>
-          Fin de la période : 
+          Fin de la période :
           <input
             type="date"
             min={dateMin}
@@ -42,6 +42,14 @@ export const Tva = (cols, lines) => {
             onChange={event => onEndDateChange(event.target.value)}
           />
         </label>
+        <button
+          type="button"
+          className="ui icon button gray"
+          onClick={() => onStartDateChange()}
+          title="Paramètres"
+        >
+          Trimestre 1
+        </button>
       </section>
       <article>
         <header>Formulaire 3310</header>
