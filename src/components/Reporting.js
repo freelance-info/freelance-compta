@@ -1,22 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   func, bool, arrayOf, string, shape, any,
 } from 'prop-types';
 import { Button, Form, Modal } from 'semantic-ui-react';
 import { Table } from './Table';
-import { findMinDate, findMaxDate } from '../utils/date';
+import { getQuarters, getStartDateOfQuarter, getEndDateOfQuarter } from '../utils/date';
 
 export const Reporting = ({ open, setOpen, lines, cols }) => {
   const reportingCols = cols.filter(col => !['ref', 'debit', 'credit', 'mode'].includes(col.id));
+  const dateCol = cols.find(col => col.type === 'Date').id;
 
-  const dates = lines.map(line => line.date);
+  const quarterOptions = useMemo(() => {
+    const dateMin = lines.reduce((min, line) => (!min || (line[dateCol] && line[dateCol] < min) ? line[dateCol] : min), null);
+    const dateMax = lines.reduce((max, line) => (!max || (line[dateCol] && line[dateCol] > max) ? line[dateCol] : max), null);
+    const quarters = getQuarters(dateMin, dateMax);
+    const options = Object.keys(quarters).flatMap(year => quarters[year].map(quarter => (
+      {
+        key: `${year}-${quarter}`,
+        value: `${year}-${quarter}`,
+        text: `${year} - trimestre ${quarter}`,
+      }
+    )));
+    return options;
+  }, [dateCol, lines]);
 
-  const minDate = findMinDate(dates, '2000-01-01');
-  const [startDate, setStartDate] = useState(minDate);
-  const startDateChange = val => { setStartDate(val); };
-  const maxDate = findMaxDate(dates, '2100-01-01');
-  const [endDate, setEndDate] = useState(maxDate);
-  const endDateChange = val => { setEndDate(val); };
+  const [startQuarter, setStartQuarter] = useState(quarterOptions[0].value);
+  const [endQuarter, setEndQuarter] = useState(quarterOptions[quarterOptions.length - 1].value);
+  const [filteredLines, setFilteredLines] = useState(lines);
+
+  useEffect(() => {
+    const startDate = getStartDateOfQuarter(startQuarter);
+    const endDate = getEndDateOfQuarter(endQuarter);
+    setFilteredLines(lines.filter(line => line[dateCol] && line[dateCol] > startDate && line[dateCol] <= endDate));
+  }, [cols, lines, startQuarter, endQuarter]);
 
   return (
     <Modal
@@ -32,25 +48,23 @@ export const Reporting = ({ open, setOpen, lines, cols }) => {
         <Form>
           <Form.Group>
             <Form.Field inline>
-              <Form.Input
-                type="date"
-                required
-                label="Début de période"
-                min={minDate}
-                max={maxDate}
-                value={startDate}
-                onChange={event => startDateChange(event.target.value)}
+              <Form.Select
+                compact
+                style={{ width: '200px' }}
+                options={quarterOptions}
+                value={startQuarter}
+                onChange={(_event, { value: val }) => setStartQuarter(val)}
+                placeholder="Début de la période"
               />
             </Form.Field>
             <Form.Field inline>
-              <Form.Input
-                type="date"
-                required
-                label="Fin de période"
-                min={minDate}
-                max={maxDate}
-                value={endDate}
-                onChange={event => endDateChange(event.target.value)}
+              <Form.Select
+                compact
+                style={{ width: '200px' }}
+                options={quarterOptions}
+                value={endQuarter}
+                onChange={(_event, { value: val }) => setEndQuarter(val)}
+                placeholder="Fin de la période"
               />
             </Form.Field>
           </Form.Group>
@@ -58,7 +72,7 @@ export const Reporting = ({ open, setOpen, lines, cols }) => {
         <Table
           key="reporting-table"
           cols={reportingCols}
-          lines={lines}
+          lines={filteredLines}
         />
       </Modal.Content>
       <Modal.Actions>
