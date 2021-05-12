@@ -8,16 +8,20 @@
       "type": "node",
       "request": "launch",
       "name": "Jest Tests",
-      "program": "${workspaceRoot}/node_modules/jest/bin/jest.js",
+      "program": "node_modules/@craco/craco/bin/craco.js",
       "args": [
-          "src\\utils\\date.test.js"
+          "test",
+          "--watchAll=false", // disable interactive mode
+          "--runInBand",
+          "--no-cache",
+          "src/utils/date.test.js"
       ],
-      "preLaunchTask": "npm: build:web",
-      "internalConsoleOptions": "openOnSessionStart",
-      "outFiles": [
-          "${workspaceRoot}/dist/**/*"
-      ],
-      "envFile": "${workspaceRoot}/.env.web"
-  }
+          "cwd": "${workspaceRoot}",
+          "protocol": "inspector",
+          "console": "integratedTerminal",
+          "internalConsoleOptions": "neverOpen",
+          "env": { "CI": "true" },
+          "disableOptimisticBPs": true
+    }
   ]
 }
