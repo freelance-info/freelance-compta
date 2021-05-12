@@ -49,8 +49,7 @@ export function save(filePath, lines, cols, setActionMessage) {
 
 // Write values to new file
 export function saveAs(currentFile, setCurrentFile, fileChange, lines, cols, setActionMessage) {
-
-  const remote = window.require('electron').remote;  
+  const { remote } = window.require('electron');
 
   return new Promise((resolve, reject) => {
     const filePath = remote.dialog.showSaveDialogSync(remote.getCurrentWindow(), {
@@ -79,8 +78,7 @@ export function saveAs(currentFile, setCurrentFile, fileChange, lines, cols, set
 export function open(
   currentFile, setCurrentFile, fileChange, setActionMessage, lines, cols,
 ) {
-
-  const remote = window.require('electron').remote;  
+  const { remote } = window.require('electron');
 
   return new Promise((resolve, reject) => {
     const defaultPath = currentFile;

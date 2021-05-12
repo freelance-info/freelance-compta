@@ -1,7 +1,7 @@
 import React from 'react';
 import { PropTypes, shape } from 'prop-types';
 
-export const HeaderCell = ({col, sort, onSort}) => (
+export const HeaderCell = ({ col, sort, onSort }) => (
   <th
     key={`header-cell-${col.id}`}
     onClick={() => onSort(col.id)}
@@ -12,9 +12,7 @@ export const HeaderCell = ({col, sort, onSort}) => (
 );
 
 HeaderCell.propTypes = {
-  col: shape({
-    id: PropTypes.string.isRequired
-  }).isRequired,
+  col: shape({ id: PropTypes.string.isRequired }).isRequired,
   sort: shape({
     column: PropTypes.string,
     direction: PropTypes.string,

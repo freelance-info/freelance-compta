@@ -25,6 +25,7 @@ export const searchLines = (lines, searchText, searchColId, searchResults) => {
   } else {
     newSearchResults = [...searchResults];
   }
+  // eslint-disable-next-line no-param-reassign
   document.querySelectorAll('input').forEach(input => { input.style.backgroundColor = 'transparent'; });
   if (newSearchResults.length > 0) {
     const lineIndex = newSearchResults.shift();

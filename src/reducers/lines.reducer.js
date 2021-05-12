@@ -1,17 +1,23 @@
-import { PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA, PARAMETER_DEFAULT_DEBIT_ACCOUNT, PARAMETER_DEFAULT_CREDIT_ACCOUNT, PARAMETER_KEYS } from '../utils/globals';
+import {
+  PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA, PARAMETER_DEFAULT_DEBIT_ACCOUNT, PARAMETER_DEFAULT_CREDIT_ACCOUNT,
+  PARAMETER_KEYS, UNIQUE_KEY_COL_ID,
+} from '../utils/globals';
 import { sortByCol } from '../utils/sort';
 
 export const linesInitialState = {
   cols: [
     { id: 'date', title: 'Date', type: 'Date', required: true },
-    { id: 'ref', title: 'Réf. de la facture', type: 'Text', required: false, width: '75px' },
+    { id: UNIQUE_KEY_COL_ID, title: 'Réf. de la facture', type: 'Text', required: false, width: '75px' },
     { id: 'client', title: 'Client', type: 'Text', required: false, width: '150px' },
-    { id: 'debit', title: "Compte débité", type: 'Select', required: true, width: '100px', defaultParamKey: PARAMETER_DEFAULT_DEBIT_ACCOUNT },
+    // eslint-disable-next-line max-len
+    { id: 'debit', title: 'Compte débité', type: 'Select', required: true, width: '100px', defaultParamKey: PARAMETER_DEFAULT_DEBIT_ACCOUNT },
     { id: 'nature', title: 'Nature', type: 'Text', required: true, width: '200px' },
     { id: 'ht', title: 'Montant HT', type: 'Number', required: false, width: '100px' },
     { id: 'ttc', title: 'Montant TTC', type: 'Number', required: true, width: '100px' },
     { id: 'tva', title: 'TVA', type: 'Select', required: false, width: '75px', defaultParamKey: PARAMETER_DEFAULT_TVA },
+    // eslint-disable-next-line max-len
     { id: 'mode', title: "Mode d'encaissement", type: 'Select', required: false, width: '100px', defaultParamKey: PARAMETER_DEFAULT_CASHING },
+    // eslint-disable-next-line max-len
     { id: 'credit', title: 'Compte crédité', type: 'Text', required: true, width: '100px', defaultParamKey: PARAMETER_DEFAULT_CREDIT_ACCOUNT },
   ],
   lines: [],
@@ -20,7 +26,9 @@ export const linesInitialState = {
   unsaved: false,
 };
 
-export const linesReducer = ({ lines, selectedLines, highlightedLines, cols, unsaved }, action) => {
+export const linesReducer = ({
+  lines, selectedLines, highlightedLines, cols, unsaved,
+}, action) => {
   // console.log(`linesReducer: ${JSON.stringify(action)}`);
   // By default copy initial state
   const newCols = [...cols];
@@ -32,12 +40,13 @@ export const linesReducer = ({ lines, selectedLines, highlightedLines, cols, uns
   switch (action.type) {
     case 'initCols':
       // Set default values from parameters
-      newCols.forEach(newCol => {
+      // eslint-disable-next-line no-restricted-syntax
+      for (const newCol of newCols) {
         if (newCol.defaultParamKey) {
           newCol.defaultValue = action.parameters.get(newCol.defaultParamKey);
           newCol.options = PARAMETER_KEYS.get(newCol.defaultParamKey);
         }
-      });
+      }
       break;
     case 'initLines':
       newLines = [...action.initLines];
@@ -108,5 +117,11 @@ export const linesReducer = ({ lines, selectedLines, highlightedLines, cols, uns
     default:
       throw new Error();
   }
-  return { cols: newCols, lines: newLines, selectedLines: newSelectedLines, highlightedLines: newHighlightedLines, unsaved: newUnsaved };
+  return {
+    cols: newCols,
+    lines: newLines,
+    selectedLines: newSelectedLines,
+    highlightedLines: newHighlightedLines,
+    unsaved: newUnsaved,
+  };
 };

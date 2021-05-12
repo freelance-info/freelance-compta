@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React from 'react';
 import { getQuarters } from './date';
 
@@ -6,6 +7,6 @@ test('Get quarters different years', () => {
   expect(quarters).toBe({
     2000: [2, 3, 4],
     2001: [1, 2, 3, 4],
-    2002: [1]
+    2002: [1],
   });
 });

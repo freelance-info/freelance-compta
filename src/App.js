@@ -15,7 +15,7 @@ class App extends React.Component {
       parameters: new Map(),
       showParam: false,
       tabFiles: [],
-      version 
+      version,
     };
     this.onSaveParameters = this.onSaveParameters.bind(this);
     this.onTabFilesChange = this.onTabFilesChange.bind(this);
@@ -73,12 +73,11 @@ class App extends React.Component {
       if (tabFile) {
         return (
           <Menu.Item key={tabFile} title={tabFile}>
-            { new URL(tabFile).pathname.split("/").pop()}
+            { new URL(tabFile).pathname.split('/').pop()}
           </Menu.Item>
         );
-      } else {
-        return undefined;
       }
+      return undefined;
     });
     const panes = [
       {
@@ -95,7 +94,8 @@ class App extends React.Component {
       <main style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', alignSelf: 'flex-end', marginBottom: '-35px' }}>
           <div style={{ marginRight: '10px', display: 'flex', alignItems: 'center' }}>
-              Version {version}
+            Version
+            {version}
           </div>
           <button
             type="button"

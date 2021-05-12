@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Modal } from 'semantic-ui-react';
 import { string, func, element } from 'prop-types';
 
-export const ConfirmButton = ({text, button, onOk}) => {
-
+export const ConfirmButton = ({ text, button, onOk }) => {
   const [visible, setVisible] = useState(false);
 
   return (
@@ -12,10 +11,10 @@ export const ConfirmButton = ({text, button, onOk}) => {
         { text }
       </Modal.Content>
       <Modal.Actions>
-        <button className="ui red basic cancel button" onClick={() => setVisible(false)}>
+        <button type="button" className="ui red basic cancel button" onClick={() => setVisible(false)}>
           Annuler
         </button>
-        <button className="ui green ok button" onClick={() => { setVisible(false); onOk(); }}>
+        <button type="button" className="ui green ok button" onClick={() => { setVisible(false); onOk(); }}>
           OK
         </button>
       </Modal.Actions>
@@ -27,5 +26,4 @@ ConfirmButton.propTypes = {
   text: string.isRequired,
   button: element.isRequired,
   onOk: func.isRequired,
-}
-
+};

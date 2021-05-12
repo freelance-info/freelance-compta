@@ -2,8 +2,9 @@ import React from 'react';
 import { func, bool } from 'prop-types';
 import { ConfirmButton } from './ConfirmButton';
 
-const FileButtons = ({ hasUnsavedChanges, onNew, onOpen, onSave, onSaveAs }) => {
-
+const FileButtons = ({
+  hasUnsavedChanges, onNew, onOpen, onSave, onSaveAs,
+}) => {
   const newButtonClick = hasUnsavedChanges ? () => {} : onNew;
   const openButtonClick = hasUnsavedChanges ? () => {} : onOpen;
 

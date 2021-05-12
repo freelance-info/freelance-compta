@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import {
+  func, bool, arrayOf, string, shape, any,
+} from 'prop-types';
 import { Button, Form, Modal } from 'semantic-ui-react';
 import { Table } from './Table';
 import { findMinDate, findMaxDate } from '../utils/date';
 
 export const Reporting = ({ open, setOpen, lines, cols }) => {
-
   const reportingCols = cols.filter(col => !['ref', 'debit', 'credit', 'mode'].includes(col.id));
 
   const dates = lines.map(line => line.date);
@@ -66,4 +68,26 @@ export const Reporting = ({ open, setOpen, lines, cols }) => {
       </Modal.Actions>
     </Modal>
   );
+};
+
+Reporting.propTypes = {
+  open: bool,
+  setOpen: func,
+  // eslint-disable-next-line react/forbid-prop-types
+  lines: arrayOf(any),
+  cols: arrayOf(
+    shape({
+      id: string.isRequired,
+      type: string.isRequired,
+      title: string.isRequired,
+      width: string,
+    }),
+  ),
+};
+
+Reporting.defaultProps = {
+  open: false,
+  setOpen: () => {},
+  lines: [],
+  cols: [],
 };

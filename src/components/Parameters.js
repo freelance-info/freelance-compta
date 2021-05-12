@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Modal, Form, Button, Select,
-} from 'semantic-ui-react';
+import { Modal, Form, Button, Select } from 'semantic-ui-react';
 import { func, instanceOf, bool } from 'prop-types';
 import { PARAMETER_KEYS } from '../utils/globals';
 import Logo from '../Logo/Logo';
 
-const Parameters = ({
-  initialParametersValue, open, close,
-}) => {
+const Parameters = ({ initialParametersValue, open, close }) => {
   const [parameterValues, setParameterValues] = useState(new Map(initialParametersValue));
 
   useEffect(() => {
@@ -53,21 +49,22 @@ const Parameters = ({
           value={value || ''}
         />
       );
-    } else { 
+    } else {
       input = (
-          <Select
-            compact
-            options={parameterOptions}
-            onChange={(_event, { value: val }) => onChange(parameterKey, val)}
-            value={value}
-          />
+        <Select
+          compact
+          options={parameterOptions}
+          onChange={(_event, { value: val }) => onChange(parameterKey, val)}
+          value={value}
+        />
       );
     }
     parameters.push(
+      // eslint-disable-next-line react/no-array-index-key
       <Form.Field key={parameterKey}>
         <label>{parameterKey}</label>
         { input}
-      </Form.Field>
+      </Form.Field>,
     );
   });
 

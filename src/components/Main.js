@@ -128,7 +128,7 @@ const Main = ({ parameters, fileChange }) => {
   };
   /** *************** */
 
-  /*********** FILES *************** */
+  /** ********* FILES *************** */
   const onNew = () => {
     localStorage.removeItem('accountLedger');
     setCurrentFile(null);
@@ -163,7 +163,7 @@ const Main = ({ parameters, fileChange }) => {
       <section className="buttons-bar border-bottom">
         <FileButtons hasUnsavedChanges={unsaved} onNew={onNew} onOpen={onOpen} onSave={onSave} onSaveAs={onSaveAs} />
         {actionMessage && <Message type={actionMessage.type} message={actionMessage.message} />}
-        <Search cols={cols} onChange={() => setSearchResults([])} onSearchClick={(text, option) => search(text, option)} />
+        <Search cols={cols} onChange={() => setSearchResults([])} onSearchClick={search} />
       </section>
       <section id="ledger-scrollable-container" style={{ height: '75vh', overflow: 'auto' }}>
         <Table
@@ -186,7 +186,8 @@ const Main = ({ parameters, fileChange }) => {
           <button
             type="button"
             className="ui icon button primary labeled"
-            onClick={addLine}>
+            onClick={addLine}
+          >
             <i aria-hidden="true" className="plus icon" />
             Nouvelle ligne
           </button>

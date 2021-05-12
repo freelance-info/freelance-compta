@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import {
-  shape, string, arrayOf, func,
-} from 'prop-types';
+import { shape, string, arrayOf, func } from 'prop-types';
 import { Button, Select, Input } from 'semantic-ui-react';
 
 const Search = ({ cols, onChange, onSearchClick }) => {
@@ -35,9 +33,7 @@ const Search = ({ cols, onChange, onSearchClick }) => {
 };
 
 Search.propTypes = {
-  cols: arrayOf(shape({
-    id: string.isRequired,
-  })).isRequired,
+  cols: arrayOf(shape({ id: string.isRequired })).isRequired,
   onSearchClick: func.isRequired,
   onChange: func.isRequired,
 };

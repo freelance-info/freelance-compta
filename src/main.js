@@ -1,1 +1,1 @@
-require('../public/electron.js')
+require('../public/electron.js');

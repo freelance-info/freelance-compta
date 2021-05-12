@@ -3,6 +3,7 @@ module.exports = {
     browser: true,
     es2021: true,
   },
+  ignorePatterns: ['dist', 'public', 'build'],
   extends: [
     'plugin:react/recommended',
     'airbnb',
@@ -16,7 +17,7 @@ module.exports = {
     'react',
   ],
   rules: {
-    'max-len': ['error', { code: 120 }],
+    'max-len': ['error', { code: 150 }],
     'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx'] }],
     'jsx-a11y/label-has-associated-control': [2, { required: { some: ['nesting', 'id'] } }],
     'arrow-parens': [2, 'as-needed'],
@@ -28,4 +29,10 @@ module.exports = {
       ExportDeclaration: { multiline: true, minProperties: 5 },
     }],
   },
+  overrides: [
+    {
+      files: ['**/*.test.js'],
+      env: { jest: true },
+    },
+  ],
 };

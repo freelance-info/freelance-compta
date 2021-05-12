@@ -5,8 +5,11 @@ import { HeaderCell } from './HeaderCell';
 import { FooterCell } from './FooterCell';
 import { Row } from './Row';
 import { computeTotals } from '../utils/computations';
+import { UNIQUE_KEY_COL_ID } from '../utils/globals';
 
-export const Table = ({cols, lines, rowChange, selectedLines, allSelected, select, selectAll, highlightedLines, sort, onSort, errors}) => {
+export const Table = ({
+  cols, lines, rowChange, selectedLines, allSelected, select, selectAll, highlightedLines, sort, onSort, errors,
+}) => {
   const headerCells = cols.map(col => (
     <HeaderCell
       key={`header-cell-${col.id}`}
@@ -15,10 +18,10 @@ export const Table = ({cols, lines, rowChange, selectedLines, allSelected, selec
       onSort={onSort}
     />
   ));
-  
+
   const rows = lines.map((line, lineNumber) => (
     <Row
-      key={`row-${lineNumber}`}
+      key={`row-${line[UNIQUE_KEY_COL_ID]}`}
       cols={cols}
       line={line}
       lineNumber={lineNumber}
@@ -34,19 +37,21 @@ export const Table = ({cols, lines, rowChange, selectedLines, allSelected, selec
   const footerCells = cols.map(col => (
     <FooterCell key={`footer-cell-${col.id}`} col={col} computedTotals={computedTotals} />
   ));
-  
+
   return (
     <table className="ui table small compact brown sortable">
       <thead>
         <tr>
-          { 
-            select &&
+          {
+            select
+            && (
             <th key="header-check">
               <Checkbox
                 checked={allSelected}
                 onChange={(_e, { checked }) => selectAll(checked)}
               />
             </th>
+            )
           }
           {headerCells}
         </tr>
@@ -61,7 +66,7 @@ export const Table = ({cols, lines, rowChange, selectedLines, allSelected, selec
         </tr>
       </tfoot>
     </table>
-    );
+  );
 };
 
 Table.propTypes = {
@@ -71,7 +76,7 @@ Table.propTypes = {
       type: string.isRequired,
       title: string.isRequired,
       width: string,
-    })
+    }),
   ).isRequired,
   lines: PropTypes.arrayOf(PropTypes.object).isRequired,
   rowChange: PropTypes.func,
@@ -79,16 +84,14 @@ Table.propTypes = {
   selectedLines: PropTypes.arrayOf(PropTypes.number),
   select: PropTypes.func,
   allSelected: PropTypes.bool,
-  selectAll: PropTypes.func, 
+  selectAll: PropTypes.func,
   sort: shape({
     column: PropTypes.string,
     direction: PropTypes.string,
   }),
   onSort: PropTypes.func,
   errors: PropTypes.arrayOf(PropTypes.shape({
-    col: shape({
-      id: PropTypes.string.isRequired,
-    }),
+    col: shape({ id: PropTypes.string.isRequired }),
     lineNumber: PropTypes.number.isRequired,
   })),
 };
@@ -104,4 +107,6 @@ Table.defaultProps = {
     direction: null,
   },
   onSort: () => {},
+  allSelected: false,
+  selectAll: () => {},
 };

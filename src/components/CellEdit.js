@@ -1,8 +1,6 @@
 import React from 'react';
 import { Select } from 'semantic-ui-react';
-import {
-  string, func, shape, node,
-} from 'prop-types';
+import { string, func, shape, node } from 'prop-types';
 
 const CellEdit = ({ def, value, onChange }) => {
   let input;
@@ -80,8 +78,6 @@ CellEdit.propTypes = {
   onChange: func.isRequired,
 };
 
-CellEdit.defaultProps = {
-  value: null,
-};
+CellEdit.defaultProps = { value: null };
 
 export default CellEdit;

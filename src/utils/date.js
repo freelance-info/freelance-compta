@@ -40,5 +40,4 @@ export const getQuarters = (minDate, maxDate) => {
 
   const maxQuarter = getQuarter(maxDate);
   years[maxYear] = years[maxYear].filter(quarter => quarter <= maxQuarter);
-  
 };
