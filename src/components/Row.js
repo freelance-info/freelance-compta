@@ -2,7 +2,6 @@ import React from 'react';
 import { PropTypes, shape, string } from 'prop-types';
 import { Checkbox } from 'semantic-ui-react';
 import CellEdit from './CellEdit';
-import { UNIQUE_KEY_COL_ID } from '../utils/globals';
 
 export const Row = ({
   cols, line, lineNumber, errors, highlightedLines, selectedLines, select, rowChange,
@@ -20,7 +19,7 @@ export const Row = ({
   };
 
   const td = cols.map(col => {
-    const key = `body-cell-${lineNumber}-${line[UNIQUE_KEY_COL_ID]}`;
+    const key = `body-cell-${lineNumber}-${col.id}`;
     const errorMsg = getErrorMsg(lineNumber, errors, col);
     return (
       <td key={key} id={key} className={errorMsg ? 'error' : ''}>
