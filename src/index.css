@@ -32,3 +32,11 @@ code {
   padding-bottom: 14px;
   border-bottom: 1px solid rgb(212, 212, 213);
 }
+
+/* Dropdown semantic-ui: limit width and height for long text */
+.dropdown > .text {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 100%;
+  max-height: 2em;
+}

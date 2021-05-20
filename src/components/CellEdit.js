@@ -1,33 +1,36 @@
 import React from 'react';
-import { Select } from 'semantic-ui-react';
+import { Dropdown, Popup } from 'semantic-ui-react';
 import { string, func, shape, node } from 'prop-types';
 
 const CellEdit = ({ def, value, onChange }) => {
-  let input;
+  const theValue = value === null || value === undefined ? def.defaultValue : value;
+  let result;
+  let div;
   switch (def.type) {
     case 'Text':
-      input = (
-        <input
-          type="text"
-          required
-          style={{ maxWidth: def.width }}
-          placeholder={def.title}
-          value={value || ''}
-          onChange={event => onChange(event.target.value)}
-        />
+      div = (
+        <div className="ui input fluid">
+          <input
+            type="text"
+            required
+            placeholder={def.title}
+            value={theValue || ''}
+            onChange={event => onChange(event.target.value)}
+          />
+        </div>
       );
+      result = <Popup content={theValue || ''} trigger={div} />;
       break;
     case 'Number':
-      input = (
-        <div className="ui right labeled input">
+      result = (
+        <div className="ui right labeled input fluid">
           <input
             type="number"
             required
             min="0"
             step="100"
-            style={{ maxWidth: def.width }}
             placeholder={def.title}
-            value={value === null || value === undefined ? '' : value}
+            value={theValue || ''}
             onChange={event => onChange(event.target.value)}
           />
           <div className="ui basic label">€</div>
@@ -35,37 +38,40 @@ const CellEdit = ({ def, value, onChange }) => {
       );
       break;
     case 'Date':
-      input = (
-        <input
-          type="date"
-          required
-          min="2000-01-01"
-          max="2100-01-01"
-          style={{ width: '150px' }}
-          placeholder={def.title}
-          value={value || ''}
-          onChange={event => onChange(event.target.value)}
-        />
+      result = (
+        <div className="ui input fluid">
+          <input
+            type="date"
+            required
+            min="2000-01-01"
+            max="2100-01-01"
+            placeholder={def.title}
+            value={theValue || ''}
+            onChange={event => onChange(event.target.value)}
+          />
+        </div>
       );
       break;
     case 'Select':
-      input = (
-        <Select
-          compact
-          style={{ width: def.width }}
-          options={def.options}
-          value={value === null || value === undefined ? def.defaultValue : value}
-          onChange={(_event, { value: val }) => onChange(val)}
-        />
+      div = (
+        <div className="ui input fluid">
+          <Dropdown
+            fluid
+            compact
+            selection
+            floating
+            options={def.options}
+            value={theValue || ''}
+            onChange={(_event, { value: val }) => onChange(val)}
+          />
+        </div>
       );
+      result = <Popup content={theValue || ''} trigger={div} />;
       break;
     default:
   }
-  return (
-    <div className="ui input">
-      { input}
-    </div>
-  );
+
+  return result;
 };
 
 CellEdit.propTypes = {

@@ -1,14 +1,21 @@
-import React, { useState, useEffect, useMemo } from 'react';
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable max-len */
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   func, bool, arrayOf, string, shape, any,
 } from 'prop-types';
 import { Button, Form, Modal } from 'semantic-ui-react';
+import { CREDIT_TYPES } from '../utils/globals';
 import { Table } from './Table';
 import { getQuarters, getStartDateOfQuarter, getEndDateOfQuarter } from '../utils/date';
 
 export const Reporting = ({ open, setOpen, lines, cols }) => {
   const reportingCols = cols.filter(col => !['ref', 'debit', 'credit', 'mode'].includes(col.id));
   const dateCol = cols.find(col => col.type === 'Date').id;
+
+  const [startQuarter, setStartQuarter] = useState(null);
+  const [endQuarter, setEndQuarter] = useState(null);
+  const [filteredLines, setFilteredLines] = useState(lines);
 
   const quarterOptions = useMemo(() => {
     const dateMin = lines.reduce((min, line) => (!min || (line[dateCol] && line[dateCol] < min) ? line[dateCol] : min), null);
@@ -21,18 +28,37 @@ export const Reporting = ({ open, setOpen, lines, cols }) => {
         text: `${year} - trimestre ${quarter}`,
       }
     )));
+    setStartQuarter(options[0].value);
+    setEndQuarter(options[options.length - 1].value);
     return options;
   }, [dateCol, lines]);
-
-  const [startQuarter, setStartQuarter] = useState(quarterOptions[0].value);
-  const [endQuarter, setEndQuarter] = useState(quarterOptions[quarterOptions.length - 1].value);
-  const [filteredLines, setFilteredLines] = useState(lines);
 
   useEffect(() => {
     const startDate = getStartDateOfQuarter(startQuarter);
     const endDate = getEndDateOfQuarter(endQuarter);
-    setFilteredLines(lines.filter(line => line[dateCol] && line[dateCol] > startDate && line[dateCol] <= endDate));
+    setFilteredLines(lines.filter(line => {
+      const lineDate = line[dateCol] ? new Date(line[dateCol]) : null;
+      return lineDate && lineDate > startDate && lineDate <= endDate;
+    }));
   }, [cols, lines, startQuarter, endQuarter]);
+
+  const toLine = useCallback(creditType => (
+    <tr key={creditType.key} className="ligne">
+      <td className="cell-texte align-gauche">
+        <div className="libelle">
+          <span>{creditType.text}</span>
+        </div>
+      </td>
+      <td className="cell-data numerique N15 align-gauche">
+        <div className="ui input">
+          <input type="text" value="" />
+        </div>
+      </td>
+    </tr>
+  ), []);
+
+  const taxableLines = useMemo(() => CREDIT_TYPES.filter(creditType => creditType.isTaxable).map(toLine), []);
+  const notTaxableLines = useMemo(() => CREDIT_TYPES.filter(creditType => !creditType.isTaxable).map(toLine), []);
 
   return (
     <Modal
@@ -69,11 +95,34 @@ export const Reporting = ({ open, setOpen, lines, cols }) => {
             </Form.Field>
           </Form.Group>
         </Form>
-        <Table
-          key="reporting-table"
-          cols={reportingCols}
-          lines={filteredLines}
-        />
+        <details>
+          <summary>Voir les lignes sélectionnées</summary>
+          <Table
+            key="reporting-table"
+            cols={reportingCols}
+            lines={filteredLines}
+          />
+        </details>
+        <div className="ui divider" />
+        <section>
+          <h2>Déclaration de TVA N° 3310</h2>
+          <h3>A - MONTANT DES OPERATIONS REALISEES</h3>
+          <table className="ui celled collapsing table">
+            <thead>
+              <tr>
+                <th colSpan="2">OPÉRATIONS IMPOSABLES (HT)</th>
+              </tr>
+            </thead>
+            <tbody>{taxableLines}</tbody>
+            <thead>
+              <tr>
+                <th colSpan="2">OPÉRATIONS NON IMPOSABLES</th>
+              </tr>
+            </thead>
+            <tbody>{notTaxableLines}</tbody>
+          </table>
+          <table />
+        </section>
       </Modal.Content>
       <Modal.Actions>
         <Button color="black" onClick={() => setOpen(false)}>
@@ -101,7 +150,7 @@ Reporting.propTypes = {
 
 Reporting.defaultProps = {
   open: false,
-  setOpen: () => {},
+  setOpen: () => { },
   lines: [],
   cols: [],
 };
