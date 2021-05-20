@@ -7,15 +7,16 @@ import { scrollToBottom, scrollTo } from '../utils/scroll';
 import Message from './Message';
 import Search from './Search';
 import FileButtons from './FileButtons';
+import { BottomButtons } from './BottomButtons';
 import { Table } from './Table';
-import { Reporting } from './Reporting';
+import { VAT } from './VAT';
 
-// Livre des recettes
+// Account Ledger ("Livre des recettes" in french)
 const Main = ({ parameters, fileChange }) => {
   // Column metadata definition
   const storedCurrentFile = localStorage.getItem('accountLedger');
   const [currentFile, setCurrentFile] = useState(undefined);
-  const [showReporting, setShowReporting] = useState(false);
+  const [showVat, setShowVat] = useState(false);
   const [{
     selectedLines,
     highlightedLines,
@@ -45,8 +46,8 @@ const Main = ({ parameters, fileChange }) => {
     dispatchLinesAction({ type: 'duplicateSelected' });
   };
 
-  const reporting = () => {
-    setShowReporting(true);
+  const vat = () => {
+    setShowVat(true);
   };
   /** ******************* */
 
@@ -182,44 +183,15 @@ const Main = ({ parameters, fileChange }) => {
         />
       </section>
       <section className="buttons-bar border-top">
-        <div>
-          <button
-            type="button"
-            className="ui icon button primary labeled"
-            onClick={addLine}
-          >
-            <i aria-hidden="true" className="plus icon" />
-            Nouvelle ligne
-          </button>
-          <button
-            type="button"
-            disabled={selectedLines.length === 0}
-            className="ui icon button red labeled"
-            onClick={removeLines}
-          >
-            <i aria-hidden="true" className="trash icon" />
-            Supprimer les lignes
-          </button>
-          <button
-            type="button"
-            disabled={selectedLines.length === 0}
-            className="ui icon button secondary labeled"
-            onClick={duplicateLines}
-          >
-            <i aria-hidden="true" className="copy icon" />
-            Dupliquer les lignes
-          </button>
-          <button
-            type="button"
-            className="ui icon button secondary labeled"
-            onClick={reporting}
-          >
-            <i aria-hidden="true" className="table icon" />
-            Rapports
-          </button>
-        </div>
+        <BottomButtons
+          hasSelectedLines={selectedLines.length > 0}
+          addLine={addLine}
+          removeLines={removeLines}
+          duplicateLines={duplicateLines}
+          vat={vat}
+        />
       </section>
-      <Reporting open={showReporting} setOpen={setShowReporting} cols={cols} lines={lines} />
+      <VAT open={showVat} setOpen={setShowVat} cols={cols} lines={lines} />
     </article>
   );
 };

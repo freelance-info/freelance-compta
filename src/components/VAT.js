@@ -1,5 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable max-len */
+
+// Value-Added Tax (TVA in french)
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   func, bool, arrayOf, string, shape, any,
@@ -9,7 +11,7 @@ import { CREDIT_TYPES } from '../utils/globals';
 import { Table } from './Table';
 import { getQuarters, getStartDateOfQuarter, getEndDateOfQuarter } from '../utils/date';
 
-export const Reporting = ({ open, setOpen, lines, cols }) => {
+export const VAT = ({ open, setOpen, lines, cols }) => {
   const reportingCols = cols.filter(col => !['ref', 'debit', 'credit', 'mode'].includes(col.id));
   const dateCol = cols.find(col => col.type === 'Date').id;
 
@@ -133,7 +135,7 @@ export const Reporting = ({ open, setOpen, lines, cols }) => {
   );
 };
 
-Reporting.propTypes = {
+VAT.propTypes = {
   open: bool,
   setOpen: func,
   // eslint-disable-next-line react/forbid-prop-types
@@ -148,7 +150,7 @@ Reporting.propTypes = {
   ),
 };
 
-Reporting.defaultProps = {
+VAT.defaultProps = {
   open: false,
   setOpen: () => { },
   lines: [],
