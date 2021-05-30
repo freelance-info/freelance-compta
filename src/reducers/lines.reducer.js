@@ -1,18 +1,18 @@
 import {
   PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA, PARAMETER_DEFAULT_DEBIT_ACCOUNT, PARAMETER_DEFAULT_CREDIT_ACCOUNT,
-  PARAMETER_KEYS, UNIQUE_KEY_COL_ID, PARAMETER_DEFAULT_CREDIT_TYPE,
+  PARAMETER_KEYS, UNIQUE_KEY_COL_ID, PARAMETER_DEFAULT_CREDIT_TYPE, TYPE_TVA_COL_ID, DATE_COL_ID,
 } from '../utils/globals';
 import { sortByCol } from '../utils/sort';
 
 export const linesInitialState = {
   cols: [
-    { id: 'date', title: 'Date', type: 'Date', required: true },
+    { id: DATE_COL_ID, title: 'Date', type: 'Date', required: true },
     { id: UNIQUE_KEY_COL_ID, title: 'Réf. de la facture', type: 'Text', required: false, width: '75px' },
     { id: 'client', title: 'Client', type: 'Text', required: false, width: '150px' },
     // eslint-disable-next-line max-len
     { id: 'debit', title: 'Compte débité', type: 'Select', required: true, width: '100px', defaultParamKey: PARAMETER_DEFAULT_DEBIT_ACCOUNT },
     { id: 'nature', title: 'Nature', type: 'Text', required: true, width: '200px' },
-    { id: 'typeTVA', title: 'Type TVA', type: 'Select', required: true, width: '100px', defaultParamKey: PARAMETER_DEFAULT_CREDIT_TYPE },
+    { id: TYPE_TVA_COL_ID, title: 'Type TVA', type: 'Select', required: true, width: '100px', defaultParamKey: PARAMETER_DEFAULT_CREDIT_TYPE },
     { id: 'ht', title: 'Montant HT', type: 'Number', required: false, width: '100px' },
     { id: 'ttc', title: 'Montant TTC', type: 'Number', required: true, width: '100px' },
     { id: 'tva', title: 'TVA', type: 'Select', required: false, width: '75px', defaultParamKey: PARAMETER_DEFAULT_TVA },
@@ -51,7 +51,7 @@ export const linesReducer = ({
       break;
     case 'initLines':
       newLines = [...action.initLines];
-      sortByCol(newLines, 'date');
+      sortByCol(newLines, DATE_COL_ID);
       newHighlightedLines = [];
       newSelectedLines = [];
       break;

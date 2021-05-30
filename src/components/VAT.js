@@ -7,21 +7,21 @@ import {
   func, bool, arrayOf, string, shape, any,
 } from 'prop-types';
 import { Button, Form, Modal } from 'semantic-ui-react';
-import { CREDIT_TYPES } from '../utils/globals';
+import { CREDIT_TYPES, DATE_COL_ID, TYPE_TVA_COL_ID } from '../utils/globals';
 import { Table } from './Table';
 import { getQuarters, getStartDateOfQuarter, getEndDateOfQuarter } from '../utils/date';
+import VAT_SVG from './VAT.svg';
 
 export const VAT = ({ open, setOpen, lines, cols }) => {
   const reportingCols = cols.filter(col => !['ref', 'debit', 'credit', 'mode'].includes(col.id));
-  const dateCol = cols.find(col => col.type === 'Date').id;
 
   const [startQuarter, setStartQuarter] = useState(null);
   const [endQuarter, setEndQuarter] = useState(null);
   const [filteredLines, setFilteredLines] = useState(lines);
 
   const quarterOptions = useMemo(() => {
-    const dateMin = lines.reduce((min, line) => (!min || (line[dateCol] && line[dateCol] < min) ? line[dateCol] : min), null);
-    const dateMax = lines.reduce((max, line) => (!max || (line[dateCol] && line[dateCol] > max) ? line[dateCol] : max), null);
+    const dateMin = lines.reduce((min, line) => (!min || (line[DATE_COL_ID] && line[DATE_COL_ID] < min) ? line[DATE_COL_ID] : min), null);
+    const dateMax = lines.reduce((max, line) => (!max || (line[DATE_COL_ID] && line[DATE_COL_ID] > max) ? line[DATE_COL_ID] : max), null);
     const quarters = getQuarters(dateMin, dateMax);
     const options = Object.keys(quarters).flatMap(year => quarters[year].map(quarter => (
       {
@@ -33,34 +33,40 @@ export const VAT = ({ open, setOpen, lines, cols }) => {
     setStartQuarter(options[0].value);
     setEndQuarter(options[options.length - 1].value);
     return options;
-  }, [dateCol, lines]);
+  }, [DATE_COL_ID, lines]);
 
   useEffect(() => {
     const startDate = getStartDateOfQuarter(startQuarter);
     const endDate = getEndDateOfQuarter(endQuarter);
     setFilteredLines(lines.filter(line => {
-      const lineDate = line[dateCol] ? new Date(line[dateCol]) : null;
+      const lineDate = line[DATE_COL_ID] ? new Date(line[DATE_COL_ID]) : null;
       return lineDate && lineDate > startDate && lineDate <= endDate;
     }));
   }, [cols, lines, startQuarter, endQuarter]);
 
-  const toLine = useCallback(creditType => (
-    <tr key={creditType.key} className="ligne">
-      <td className="cell-texte align-gauche">
-        <div className="libelle">
-          <span>{creditType.text}</span>
-        </div>
-      </td>
-      <td className="cell-data numerique N15 align-gauche">
-        <div className="ui input">
-          <input type="text" value="" />
-        </div>
-      </td>
-    </tr>
-  ), []);
+  const toLine = useCallback(creditType => {
+    const creditTypeSum = filteredLines
+      .filter(l => l[TYPE_TVA_COL_ID] === creditType.value)
+      .reduce((prev, cur) => prev + cur.ht, 0);
+    return (
+      <tr key={creditType.key} className="ligne">
+        <td className="cell-texte align-gauche">
+          <div className="libelle">
+            <span>{creditType.text}</span>
+          </div>
+        </td>
+        <td className="cell-data numerique N15 align-gauche">
+          <div className="ui right labeled input">
+            <input type="text" value={creditTypeSum} readOnly />
+            <div className="ui basic label">€</div>
+          </div>
+        </td>
+      </tr>
+    );
+  }, []);
 
-  const taxableLines = useMemo(() => CREDIT_TYPES.filter(creditType => creditType.isTaxable).map(toLine), []);
-  const notTaxableLines = useMemo(() => CREDIT_TYPES.filter(creditType => !creditType.isTaxable).map(toLine), []);
+  const taxableLines = useMemo(() => CREDIT_TYPES.filter(creditType => creditType.isTaxable).map(toLine), [filteredLines]);
+  const notTaxableLines = useMemo(() => CREDIT_TYPES.filter(creditType => !creditType.isTaxable).map(toLine), [filteredLines]);
 
   return (
     <Modal
@@ -107,8 +113,13 @@ export const VAT = ({ open, setOpen, lines, cols }) => {
         </details>
         <div className="ui divider" />
         <section>
-          <h2>Déclaration de TVA N° 3310</h2>
-          <h3>A - MONTANT DES OPERATIONS REALISEES</h3>
+          <div style={{ display: 'flex' }}>
+            <div style={{ width: '500px' }}>
+              <h2>Déclaration de TVA N° 3310</h2>
+              <h3>A - MONTANT DES OPERATIONS REALISEES</h3>
+            </div>
+            <img src={VAT_SVG} alt="Logo Impots" style={{ width: '100px' }} />
+          </div>
           <table className="ui celled collapsing table">
             <thead>
               <tr>
@@ -128,7 +139,7 @@ export const VAT = ({ open, setOpen, lines, cols }) => {
       </Modal.Content>
       <Modal.Actions>
         <Button color="black" onClick={() => setOpen(false)}>
-          Close
+          Fermer
         </Button>
       </Modal.Actions>
     </Modal>

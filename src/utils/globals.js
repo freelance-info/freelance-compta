@@ -5,6 +5,8 @@ export const PARAMETER_DEFAULT_DEBIT_ACCOUNT = 'Compte à débiter par défaut';
 export const PARAMETER_DEFAULT_CREDIT_ACCOUNT = 'Compte à créditer par défaut';
 export const PARAMETER_DEFAULT_CREDIT_TYPE = 'Type de recette pour la TVA par défaut';
 export const UNIQUE_KEY_COL_ID = 'ref';
+export const DATE_COL_ID = 'date';
+export const TYPE_TVA_COL_ID = 'typeTva';
 
 // Liste extraite de la déclaration TVA 3310
 export const CREDIT_TYPES = [

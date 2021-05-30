@@ -1,3 +1,4 @@
+import { DATE_COL_ID } from './globals';
 import { sortByCol } from './sort';
 
 export function writeData(path, header, data) {
@@ -35,7 +36,7 @@ export function readData(path, cols) {
 
 // Write values to given file
 export function save(filePath, lines, cols, setActionMessage) {
-  const sortedLines = sortByCol(lines, 'date');
+  const sortedLines = sortByCol(lines, DATE_COL_ID);
   return writeData(filePath, cols, sortedLines)
     .then(() => {
       const now = new Date();

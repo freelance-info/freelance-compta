@@ -1,10 +1,11 @@
+import { DATE_COL_ID } from './globals';
 import { scrollTo } from './scroll';
 import { parseDate } from './date';
 
 export const searchLines = (lines, searchText, searchColId, searchResults) => {
   let newSearchResults;
   let regexp = null;
-  if (searchColId.toLowerCase() === 'date') {
+  if (searchColId.toLowerCase() === DATE_COL_ID) {
     const normalizedDate = parseDate(searchText);
     if (normalizedDate) {
       const dateString = normalizedDate.toISOString().substr(0, 10);
