@@ -77,4 +77,4 @@ PARAMETER_KEYS.set(PARAMETER_DEFAULT_DEBIT_ACCOUNT, [
   { key: '7085', text: '7085 - Ports et frais accessoires facturés', value: '7085 - Ports et frais accessoires facturés' },
 ]);
 PARAMETER_KEYS.set(PARAMETER_DEFAULT_CREDIT_ACCOUNT, null);
-PARAMETER_KEYS.set(PARAMETER_DEFAULT_CREDIT_TYPE, CREDIT_TYPES);
+PARAMETER_KEYS.set(PARAMETER_DEFAULT_CREDIT_TYPE, CREDIT_TYPES.map(({ key, text, value }) => ({ key, text, value })));

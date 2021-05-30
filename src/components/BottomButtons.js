@@ -1,5 +1,5 @@
 import React from 'react';
-import { func } from 'prop-types';
+import { func, bool } from 'prop-types';
 import { Button } from 'semantic-ui-react';
 
 export const BottomButtons = ({
@@ -40,7 +40,7 @@ export const BottomButtons = ({
 );
 
 BottomButtons.propTypes = {
-  hasSelectedLines: func.isRequired,
+  hasSelectedLines: bool.isRequired,
   addLine: func.isRequired,
   removeLines: func.isRequired,
   duplicateLines: func.isRequired,
