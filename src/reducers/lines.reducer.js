@@ -1,6 +1,6 @@
 import {
-  PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_TVA, PARAMETER_DEFAULT_DEBIT_ACCOUNT, PARAMETER_DEFAULT_CREDIT_ACCOUNT,
-  PARAMETER_KEYS, UNIQUE_KEY_COL_ID, PARAMETER_DEFAULT_CREDIT_TYPE, TYPE_TVA_COL_ID, DATE_COL_ID,
+  PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_VAT, PARAMETER_DEFAULT_DEBIT_ACCOUNT, PARAMETER_DEFAULT_CREDIT_ACCOUNT,
+  PARAMETER_KEYS, UNIQUE_KEY_COL_ID, PARAMETER_DEFAULT_CREDIT_TYPE, VAT_TYPE_COL_ID, DATE_COL_ID, VAT_RATE_COL_ID,
 } from '../utils/globals';
 import { sortByCol } from '../utils/sort';
 
@@ -12,10 +12,10 @@ export const linesInitialState = {
     // eslint-disable-next-line max-len
     { id: 'debit', title: 'Compte débité', type: 'Select', required: true, width: '100px', defaultParamKey: PARAMETER_DEFAULT_DEBIT_ACCOUNT },
     { id: 'nature', title: 'Nature', type: 'Text', required: true, width: '200px' },
-    { id: TYPE_TVA_COL_ID, title: 'Type TVA', type: 'Select', required: true, width: '100px', defaultParamKey: PARAMETER_DEFAULT_CREDIT_TYPE },
+    { id: VAT_TYPE_COL_ID, title: 'Type TVA', type: 'Select', required: true, width: '100px', defaultParamKey: PARAMETER_DEFAULT_CREDIT_TYPE },
     { id: 'ht', title: 'Montant HT', type: 'Number', required: false, width: '100px' },
     { id: 'ttc', title: 'Montant TTC', type: 'Number', required: true, width: '100px' },
-    { id: 'tva', title: 'TVA', type: 'Select', required: false, width: '75px', defaultParamKey: PARAMETER_DEFAULT_TVA },
+    { id: VAT_RATE_COL_ID, title: 'TVA', type: 'Select', required: false, width: '75px', defaultParamKey: PARAMETER_DEFAULT_VAT },
     // eslint-disable-next-line max-len
     { id: 'mode', title: "Mode d'encaissement", type: 'Select', required: false, width: '100px', defaultParamKey: PARAMETER_DEFAULT_CASHING },
     // eslint-disable-next-line max-len
@@ -58,8 +58,8 @@ export const linesReducer = ({
     case 'lineChange':
       newLines[action.lineNumber][action.col.id] = action.val;
       if (action.col.id === 'ht') {
-        const tva = newLines[action.lineNumber].tva / 100;
-        newLines[action.lineNumber].ttc = Math.round(action.val * (1 + tva) * 100) / 100;
+        const vat = newLines[action.lineNumber].tva / 100;
+        newLines[action.lineNumber].ttc = Math.round(action.val * (1 + vat) * 100) / 100;
       }
       newUnsaved = true;
       break;

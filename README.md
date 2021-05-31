@@ -71,9 +71,11 @@ npm install --global --production windows-build-tools
 
 ## Packaging
 
-1. `npm run build:electron`: création des fichiers javascript de production
+1. Augmenter le numéro de version dans `package.json`
 
-2. `npm dist:win`, `npm dist:linux` et `npm dist:mac` : création des exécutable d'installation
+2. `npm run build:electron`: création des fichiers javascript de production
+
+3. `npm dist:win`, `npm dist:linux` et `npm dist:mac` : création des exécutable d'installation
 
 ## Philosophie
 

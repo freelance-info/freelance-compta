@@ -1,12 +1,13 @@
 export const PARAMETER_ENTREPRISE_NAME = "Nom de l'entreprise";
-export const PARAMETER_DEFAULT_TVA = 'Taux de TVA par défaut';
+export const PARAMETER_DEFAULT_VAT = 'Taux de TVA par défaut';
 export const PARAMETER_DEFAULT_CASHING = "Mode d'encaissement par défaut";
 export const PARAMETER_DEFAULT_DEBIT_ACCOUNT = 'Compte à débiter par défaut';
 export const PARAMETER_DEFAULT_CREDIT_ACCOUNT = 'Compte à créditer par défaut';
 export const PARAMETER_DEFAULT_CREDIT_TYPE = 'Type de recette pour la TVA par défaut';
 export const UNIQUE_KEY_COL_ID = 'ref';
 export const DATE_COL_ID = 'date';
-export const TYPE_TVA_COL_ID = 'typeTva';
+export const VAT_TYPE_COL_ID = 'typeTva';
+export const VAT_RATE_COL_ID = 'tva';
 
 // Liste extraite de la déclaration TVA 3310
 export const CREDIT_TYPES = [
@@ -54,15 +55,17 @@ export const CREDIT_TYPES = [
   },
 ];
 
-export const PARAMETER_KEYS = new Map();
-PARAMETER_KEYS.set(PARAMETER_ENTREPRISE_NAME, null);
-PARAMETER_KEYS.set(PARAMETER_DEFAULT_TVA, [
+export const VAT_RATES = [
   { key: '20', text: '20%', value: '20' },
   { key: '10', text: '10%', value: '10' },
   { key: '5.5', text: '5,5%', value: '5.5' },
   { key: '2.1', text: '2,1%', value: '2.1' },
   { key: '0', text: '0%', value: '0' },
-]);
+];
+
+export const PARAMETER_KEYS = new Map();
+PARAMETER_KEYS.set(PARAMETER_ENTREPRISE_NAME, null);
+PARAMETER_KEYS.set(PARAMETER_DEFAULT_VAT, VAT_RATES);
 PARAMETER_KEYS.set(PARAMETER_DEFAULT_CASHING, [
   { key: 'Virement', text: 'Virement', value: 'Virement' },
   { key: 'CB', text: 'CB', value: 'CB' },

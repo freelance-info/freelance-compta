@@ -7,7 +7,9 @@ import {
   func, bool, arrayOf, string, shape, any,
 } from 'prop-types';
 import { Button, Form, Modal } from 'semantic-ui-react';
-import { CREDIT_TYPES, DATE_COL_ID, TYPE_TVA_COL_ID } from '../utils/globals';
+import {
+  CREDIT_TYPES, DATE_COL_ID, VAT_TYPE_COL_ID, VAT_RATES, VAT_RATE_COL_ID,
+} from '../utils/globals';
 import { Table } from './Table';
 import { getQuarters, getStartDateOfQuarter, getEndDateOfQuarter } from '../utils/date';
 import VAT_SVG from './VAT.svg';
@@ -44,18 +46,14 @@ export const VAT = ({ open, setOpen, lines, cols }) => {
     }));
   }, [cols, lines, startQuarter, endQuarter]);
 
-  const toLine = useCallback(creditType => {
+  const toTaxableLine = useCallback(creditType => {
     const creditTypeSum = filteredLines
-      .filter(l => l[TYPE_TVA_COL_ID] === creditType.value)
+      .filter(l => l[VAT_TYPE_COL_ID] === creditType.value)
       .reduce((prev, cur) => prev + cur.ht, 0);
     return (
-      <tr key={creditType.key} className="ligne">
-        <td className="cell-texte align-gauche">
-          <div className="libelle">
-            <span>{creditType.text}</span>
-          </div>
-        </td>
-        <td className="cell-data numerique N15 align-gauche">
+      <tr key={creditType.key}>
+        <td>{creditType.text}</td>
+        <td>
           <div className="ui right labeled input">
             <input type="text" value={creditTypeSum} readOnly />
             <div className="ui basic label">€</div>
@@ -63,85 +61,120 @@ export const VAT = ({ open, setOpen, lines, cols }) => {
         </td>
       </tr>
     );
-  }, []);
+  }, [filteredLines]);
 
-  const taxableLines = useMemo(() => CREDIT_TYPES.filter(creditType => creditType.isTaxable).map(toLine), [filteredLines]);
-  const notTaxableLines = useMemo(() => CREDIT_TYPES.filter(creditType => !creditType.isTaxable).map(toLine), [filteredLines]);
+  const toVatLine = useCallback(rate => {
+    const vatTypeSum = filteredLines
+      .filter(l => l[VAT_RATE_COL_ID] === rate.value)
+      .reduce((prev, cur) => prev + cur.ht, 0);
+    const vatAmount = Math.round(vatTypeSum * rate.value) / 100;
+    return (
+      <tr key={rate.key}>
+        <td>{rate.text}</td>
+        <td>
+          <div className="ui right labeled input">
+            <input type="text" value={vatTypeSum} readOnly />
+            <div className="ui basic label">€</div>
+          </div>
+        </td>
+        <td>
+          <div className="ui right labeled input">
+            <input type="text" value={vatAmount} readOnly />
+            <div className="ui basic label">€</div>
+          </div>
+        </td>
+      </tr>
+    );
+  }, [filteredLines]);
+
+  const taxableLines = useMemo(() => CREDIT_TYPES.filter(creditType => creditType.isTaxable).map(toTaxableLine), [filteredLines]);
+  const notTaxableLines = useMemo(() => CREDIT_TYPES.filter(creditType => !creditType.isTaxable).map(toTaxableLine), [filteredLines]);
+  const vatLines = useMemo(() => VAT_RATES.map(toVatLine), [filteredLines]);
 
   return (
     <Modal
-      size="fullscreen"
+      size="large"
       onClose={() => setOpen(false)}
       onOpen={() => setOpen(true)}
       open={open}
     >
       <Modal.Header>
-        Rapports
+        <div className="ui centered three column grid">
+          <img src={VAT_SVG} alt="Logo Impots" style={{ width: '100px' }} className="ui column" />
+          <h2 className="ui column">Déclaration de TVA N° 3310</h2>
+          <div className="ui column" style={{ width: '100px', alignItems: 'center', display: 'flex' }}><Button color="black" onClick={() => setOpen(false)}>Fermer</Button></div>
+        </div>
       </Modal.Header>
       <Modal.Content>
-        <Form>
-          <Form.Group>
-            <Form.Field inline>
-              <Form.Select
-                compact
-                style={{ width: '200px' }}
-                options={quarterOptions}
-                value={startQuarter}
-                onChange={(_event, { value: val }) => setStartQuarter(val)}
-                placeholder="Début de la période"
+        <main className="ui container">
+          <section className="ui segments">
+            <Form className="ui segment">
+              <Form.Group>
+                <Form.Field inline>
+                  <Form.Select
+                    compact
+                    style={{ width: '200px' }}
+                    options={quarterOptions}
+                    value={startQuarter}
+                    onChange={(_event, { value: val }) => setStartQuarter(val)}
+                    placeholder="Début de la période"
+                  />
+                </Form.Field>
+                <Form.Field inline>
+                  <Form.Select
+                    compact
+                    style={{ width: '200px' }}
+                    options={quarterOptions}
+                    value={endQuarter}
+                    onChange={(_event, { value: val }) => setEndQuarter(val)}
+                    placeholder="Fin de la période"
+                  />
+                </Form.Field>
+              </Form.Group>
+            </Form>
+            <details className="ui segment">
+              <summary>Voir les lignes sélectionnées</summary>
+              <Table
+                key="reporting-table"
+                cols={reportingCols}
+                lines={filteredLines}
               />
-            </Form.Field>
-            <Form.Field inline>
-              <Form.Select
-                compact
-                style={{ width: '200px' }}
-                options={quarterOptions}
-                value={endQuarter}
-                onChange={(_event, { value: val }) => setEndQuarter(val)}
-                placeholder="Fin de la période"
-              />
-            </Form.Field>
-          </Form.Group>
-        </Form>
-        <details>
-          <summary>Voir les lignes sélectionnées</summary>
-          <Table
-            key="reporting-table"
-            cols={reportingCols}
-            lines={filteredLines}
-          />
-        </details>
-        <div className="ui divider" />
-        <section>
-          <div style={{ display: 'flex' }}>
-            <div style={{ width: '500px' }}>
-              <h2>Déclaration de TVA N° 3310</h2>
+            </details>
+            <section className="ui segment fluid">
               <h3>A - MONTANT DES OPERATIONS REALISEES</h3>
-            </div>
-            <img src={VAT_SVG} alt="Logo Impots" style={{ width: '100px' }} />
-          </div>
-          <table className="ui celled collapsing table">
-            <thead>
-              <tr>
-                <th colSpan="2">OPÉRATIONS IMPOSABLES (HT)</th>
-              </tr>
-            </thead>
-            <tbody>{taxableLines}</tbody>
-            <thead>
-              <tr>
-                <th colSpan="2">OPÉRATIONS NON IMPOSABLES</th>
-              </tr>
-            </thead>
-            <tbody>{notTaxableLines}</tbody>
-          </table>
-          <table />
-        </section>
+              <table className="ui celled table">
+                <thead>
+                  <tr>
+                    <th colSpan="2">OPÉRATIONS IMPOSABLES (HT)</th>
+                  </tr>
+                </thead>
+                <tbody>{taxableLines}</tbody>
+                <thead>
+                  <tr>
+                    <th colSpan="2">OPÉRATIONS NON IMPOSABLES</th>
+                  </tr>
+                </thead>
+                <tbody>{notTaxableLines}</tbody>
+              </table>
+              <table />
+            </section>
+            <section className="ui segment">
+              <h3>B - DECOMPTE TVA À PAYER</h3>
+              <table className="ui celled table">
+                <thead>
+                  <tr>
+                    <th>TVA BRUTE</th>
+                    <th>BASE HT</th>
+                    <th>TAXE DUE</th>
+                  </tr>
+                </thead>
+                <tbody>{vatLines}</tbody>
+              </table>
+              <table />
+            </section>
+          </section>
+        </main>
       </Modal.Content>
-      <Modal.Actions>
-        <Button color="black" onClick={() => setOpen(false)}>
-          Fermer
-        </Button>
-      </Modal.Actions>
     </Modal>
   );
 };
