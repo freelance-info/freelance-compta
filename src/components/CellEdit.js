@@ -4,12 +4,13 @@ import { string, func, shape, node } from 'prop-types';
 
 const CellEdit = ({ def, value, onChange }) => {
   const theValue = value === null || value === undefined ? def.defaultValue : value;
+  const divStyle = { minWidth: def.width };
   let result;
   let div;
   switch (def.type) {
     case 'Text':
       div = (
-        <div className="ui input fluid">
+        <div className="ui input fluid" style={divStyle}>
           <input
             type="text"
             required
@@ -23,7 +24,7 @@ const CellEdit = ({ def, value, onChange }) => {
       break;
     case 'Number':
       result = (
-        <div className="ui right labeled input fluid">
+        <div className="ui right labeled input fluid" style={divStyle}>
           <input
             type="number"
             required
@@ -39,7 +40,7 @@ const CellEdit = ({ def, value, onChange }) => {
       break;
     case 'Date':
       result = (
-        <div className="ui input fluid">
+        <div className="ui input fluid" style={divStyle}>
           <input
             type="date"
             required
@@ -54,7 +55,7 @@ const CellEdit = ({ def, value, onChange }) => {
       break;
     case 'Select':
       div = (
-        <div className="ui input fluid">
+        <div className="ui input fluid" style={divStyle}>
           <Dropdown
             fluid
             compact
