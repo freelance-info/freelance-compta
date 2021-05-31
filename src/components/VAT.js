@@ -49,7 +49,7 @@ export const VAT = ({ open, setOpen, lines, cols }) => {
   const toTaxableLine = useCallback(creditType => {
     const creditTypeSum = filteredLines
       .filter(l => l[VAT_TYPE_COL_ID] === creditType.value)
-      .reduce((prev, cur) => prev + cur.ht, 0);
+      .reduce((prev, cur) => prev + 1 * cur.ht, 0);
     return (
       <tr key={creditType.key}>
         <td>{creditType.text}</td>
@@ -66,7 +66,7 @@ export const VAT = ({ open, setOpen, lines, cols }) => {
   const toVatLine = useCallback(rate => {
     const vatTypeSum = filteredLines
       .filter(l => l[VAT_RATE_COL_ID] === rate.value)
-      .reduce((prev, cur) => prev + cur.ht, 0);
+      .reduce((prev, cur) => prev + 1 * cur.ht, 0);
     const vatAmount = Math.round(vatTypeSum * rate.value) / 100;
     return (
       <tr key={rate.key}>
