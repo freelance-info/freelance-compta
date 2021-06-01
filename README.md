@@ -42,7 +42,7 @@ Chaque ligne comptable lié à une facture conservera une référence vers le ch
 ## Les documents à produire
 
 - Déclaration 2035
-- Déclaration de TVA
+- Déclaration de TVA Cerfa 3310 (régime réél) ou 3517 (régime simplifié)
 - Télétransmission de la liasse fiscale à votre AGA
 
 ## Sauvegarde des données
