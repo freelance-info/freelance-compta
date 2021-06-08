@@ -98,8 +98,7 @@ export const linesReducer = ({
     case 'duplicateSelected':
       lines.forEach((line, index) => {
         if (selectedLines.some(idx => index === idx)) {
-          const newLine = { ...line };
-          newLines.push(newLine);
+          newLines.push({ ...line });
           newHighlightedLines.push(newLines.length - 1);
         }
       });

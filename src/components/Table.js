@@ -7,6 +7,13 @@ import { Row } from './Row';
 import { computeTotals } from '../utils/computations';
 import { UNIQUE_KEY_COL_ID } from '../utils/globals';
 
+const buildLineUniqueKey = (lines, line, lineNumber) => {
+  const duplicatedKeys = lines.map((l, lNumber) => ({ l, lNumber }))
+    .filter(({ lNumber }) => lNumber < lineNumber)
+    .filter(({ l }) => l[UNIQUE_KEY_COL_ID] === line[UNIQUE_KEY_COL_ID]);
+  return `${line[UNIQUE_KEY_COL_ID]}-${duplicatedKeys.length}`;
+};
+
 export const Table = ({
   cols, lines, rowChange, selectedLines, allSelected, select, selectAll, highlightedLines, sort, onSort, errors,
 }) => {
@@ -21,7 +28,7 @@ export const Table = ({
 
   const rows = lines.map((line, lineNumber) => (
     <Row
-      key={`row-${line[UNIQUE_KEY_COL_ID]}`}
+      key={buildLineUniqueKey(lines, line, lineNumber)}
       cols={cols}
       line={line}
       lineNumber={lineNumber}
