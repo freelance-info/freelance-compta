@@ -94,8 +94,7 @@ class App extends React.Component {
       <main style={{ padding: '10px', display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', alignSelf: 'flex-end', marginBottom: '-35px' }}>
           <div style={{ marginRight: '10px', display: 'flex', alignItems: 'center' }}>
-            Version
-            {version}
+            {`Version ${version}`}
           </div>
           <button
             type="button"
