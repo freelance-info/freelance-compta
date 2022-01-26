@@ -16,7 +16,8 @@ const createWindow = (container) => {
         show: false,
         icon:__dirname + '/icon.png',
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            enableRemoteModule: true,
         }
     });
     browserWindow.maximize();
