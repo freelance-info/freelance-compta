@@ -13,6 +13,8 @@ import { VAT } from './VAT';
 
 // Account Ledger ("Livre des recettes" in french)
 const Main = ({ parameters, fileChange }) => {
+  const [actionMessage, setActionMessage] = useState(undefined);
+
   // Column metadata definition
   const storedCurrentFile = localStorage.getItem('accountLedger');
   const [currentFile, setCurrentFile] = useState(undefined);
@@ -66,9 +68,14 @@ const Main = ({ parameters, fileChange }) => {
       if (currentFile !== storedCurrentFile) {
         localStorage.setItem('accountLedger', currentFile);
       }
-      readData(currentFile, cols).then(initLines => {
-        dispatchLinesAction({ type: 'initLines', initLines });
-      });
+      readData(currentFile, cols)
+        .then(initLines => {
+          dispatchLinesAction({ type: 'initLines', initLines });
+        })
+        .catch(error => {
+          const message = `Problème avec le fichier "${currentFile}": ${error.message}`;
+          setActionMessage({ type: 'negative', message });
+        });
     }
   }, [currentFile]);
 
@@ -91,8 +98,7 @@ const Main = ({ parameters, fileChange }) => {
   };
 
   /** ******* ERRORS **** */
-  const [errors, setErrors] = useState([]);
-  const [actionMessage, setActionMessage] = useState(undefined);
+  const [lineErrors, setLineErrors] = useState([]);
 
   // Return error object if any for given line
   const validateLine = (line, lineNumber, columns) => ({
@@ -101,22 +107,21 @@ const Main = ({ parameters, fileChange }) => {
   });
 
   // Write values to current file
-  const checkErrors = () => new Promise((resolve, reject) => {
+  const checkErrors = (theLines, theCols) => new Promise((resolve, reject) => {
     // Check error on every existing lines
-    const errorLines = lines.map((line, lineNumber) => validateLine(line, lineNumber, cols))
+    const errorLines = theLines.map((line, lineNumber) => validateLine(line, lineNumber, theCols))
       .filter(error => error.cols.length > 0);
 
     // Perform save action if no error
     if (errorLines.length === 0) {
-      setErrors(() => []);
+      setLineErrors(() => []);
       setActionMessage(undefined);
       resolve();
     } else {
-      setErrors(() => errorLines);
-      setActionMessage({ type: 'negative', message: 'Enregistrement impossible, veuillez corriger les erreurs' });
-      setTimeout(() => scrollTo('#ledger-scrollable-container', `#body-cell-${errorLines[0].lineNumber}-${cols[0].id}`),
+      setLineErrors(() => errorLines);
+      setTimeout(() => scrollTo('#ledger-scrollable-container', `#body-cell-${errorLines[0].lineNumber}-${theCols[0].id}`),
         200);
-      reject();
+      reject(new Error('Enregistrement impossible, veuillez corriger les erreurs'));
     }
   });
 
@@ -133,26 +138,30 @@ const Main = ({ parameters, fileChange }) => {
   const onNew = () => {
     localStorage.removeItem('accountLedger');
     setCurrentFile(null);
+    setActionMessage(null);
     fileChange(null);
     dispatchLinesAction({ type: 'initLines', initLines: [] });
   };
 
   const onOpen = () => {
     open(currentFile, setCurrentFile, fileChange, setActionMessage, lines, cols)
-      .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }));
+      .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }))
+      .catch(err => setActionMessage({ type: 'negative', message: err.message ?? err }));
   };
 
-  const onSaveAs = () => checkErrors()
+  const onSaveAs = () => checkErrors(lines, cols)
     .then(() => saveAs(currentFile, setCurrentFile, fileChange, lines, cols, setActionMessage))
     .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }))
-    .then(() => dispatchLinesAction({ type: 'saved' }));
+    .then(() => dispatchLinesAction({ type: 'saved' }))
+    .catch(err => setActionMessage({ type: 'negative', message: err.message ?? err }));
 
   const onSave = () => {
     if (currentFile) {
-      checkErrors()
+      checkErrors(lines, cols)
         .then(() => save(currentFile, lines, cols, setActionMessage))
         .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }))
-        .then(() => dispatchLinesAction({ type: 'saved' }));
+        .then(() => dispatchLinesAction({ type: 'saved' }))
+        .catch(err => setActionMessage({ type: 'negative', message: err.message ?? err }));
     } else {
       // If this is the 1st time app is launched, there is no currentFile: run saveAs
       onSaveAs();
@@ -179,7 +188,7 @@ const Main = ({ parameters, fileChange }) => {
           highlightedLines={highlightedLines}
           sort={sortState}
           onSort={handleSort}
-          errors={errors}
+          errors={lineErrors}
         />
       </section>
       <section className="buttons-bar border-top">
@@ -191,7 +200,9 @@ const Main = ({ parameters, fileChange }) => {
           vat={vat}
         />
       </section>
-      <VAT open={showVat} setOpen={setShowVat} cols={cols} lines={lines} />
+      {
+        showVat && <VAT open={showVat} setOpen={setShowVat} cols={cols} lines={lines} />
+      }
     </article>
   );
 };

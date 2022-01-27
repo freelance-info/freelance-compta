@@ -1,14 +1,34 @@
+import { access, constants } from 'fs';
 import { DATE_COL_ID } from './globals';
 import { sortByCol } from './sort';
 
-export function writeData(path, header, data) {
+function fileExistsAndWritable(path) {
+  return new Promise((resolve, reject) => {
+    access(path, constants.F_OK, err1 => {
+      if (err1) {
+        reject(new Error("Le fichier n'existe plus. Il a peut-être été renommé, supprimé ou déplacé."));
+      } else {
+        access(path, constants.W_OK, err2 => {
+          if (err2) {
+            reject(new Error("Impossible d'obtenir les droits d'écriture sur le fichier, il est peut-être verrouillé"));
+          } else {
+            resolve();
+          }
+        });
+      }
+    });
+  });
+}
+
+export async function writeData(path, header, data) {
   const createCsvWriter = window.require('csv-writer').createObjectCsvWriter;
   const csvWriter = createCsvWriter({ path, header: header.map(col => ({ ...col, title: col.id })) });
   return csvWriter.writeRecords(data);
 }
 
-export function readData(path, cols) {
+export async function readData(path, cols) {
   const numberCols = cols.filter(col => col.type === 'Number');
+  await fileExistsAndWritable(path);
 
   return new Promise(resolve => {
     const csvParser = window.require('csv-parser');
@@ -68,7 +88,9 @@ export function saveAs(currentFile, setCurrentFile, fileChange, lines, cols, set
           setCurrentFile(filePath);
           fileChange(filePath);
           resolve(sortedLines);
-        }).catch(reject);
+        }).catch(err => {
+          reject(err);
+        });
     } else {
       resolve(lines);
     }
@@ -97,7 +119,7 @@ export function open(
       fileChange(filePath[0]);
       readData(filePath[0], cols)
         .then(resolve)
-        .catch(reject);
+        .catch(err => reject(err));
     } else {
       resolve(lines);
     }
