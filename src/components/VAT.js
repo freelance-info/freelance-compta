@@ -8,7 +8,7 @@ import {
 } from 'prop-types';
 import { Button, Form, Modal } from 'semantic-ui-react';
 import {
-  CREDIT_TYPES, DATE_COL_ID, VAT_TYPE_COL_ID, VAT_RATES, VAT_RATE_COL_ID,
+  CREDIT_TYPES, DATE_COL_ID, VAT_TYPE_COL_ID, VAT_RATES, VAT_RATE_COL_ID, AMOUNT_EXCLUDING_TAX_COL_ID,
 } from '../utils/globals';
 import { Table } from './Table';
 import { getQuarters, getStartDateOfQuarter, getEndDateOfQuarter } from '../utils/date';
@@ -49,7 +49,7 @@ export const VAT = ({ open, setOpen, lines, cols }) => {
   const toTaxableLine = useCallback(creditType => {
     const creditTypeSum = filteredLines
       .filter(l => l[VAT_TYPE_COL_ID] === creditType.value)
-      .reduce((prev, cur) => prev + 1 * cur.ht, 0);
+      .reduce((prev, cur) => prev + 1 * cur[AMOUNT_EXCLUDING_TAX_COL_ID], 0);
     return (
       <tr key={creditType.key}>
         <td>{creditType.text}</td>

@@ -8,6 +8,8 @@ export const UNIQUE_KEY_COL_ID = 'ref';
 export const DATE_COL_ID = 'date';
 export const VAT_TYPE_COL_ID = 'typeTva';
 export const VAT_RATE_COL_ID = 'tva';
+export const AMOUNT_EXCLUDING_TAX_COL_ID = 'ht';
+export const AMOUNT_INCLUDING_TAX_COL_ID = 'ttc';
 
 // Liste extraite de la déclaration TVA 3310
 export const CREDIT_TYPES = [

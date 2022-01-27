@@ -1,6 +1,15 @@
 import {
-  PARAMETER_DEFAULT_CASHING, PARAMETER_DEFAULT_VAT, PARAMETER_DEFAULT_DEBIT_ACCOUNT, PARAMETER_DEFAULT_CREDIT_ACCOUNT,
-  PARAMETER_KEYS, UNIQUE_KEY_COL_ID, PARAMETER_DEFAULT_CREDIT_TYPE, VAT_TYPE_COL_ID, DATE_COL_ID, VAT_RATE_COL_ID,
+  PARAMETER_DEFAULT_CASHING,
+  PARAMETER_DEFAULT_VAT,
+  PARAMETER_DEFAULT_DEBIT_ACCOUNT,
+  PARAMETER_DEFAULT_CREDIT_ACCOUNT,
+  PARAMETER_DEFAULT_CREDIT_TYPE,
+  PARAMETER_KEYS,
+  UNIQUE_KEY_COL_ID,
+  VAT_TYPE_COL_ID, DATE_COL_ID,
+  VAT_RATE_COL_ID,
+  AMOUNT_EXCLUDING_TAX_COL_ID,
+  AMOUNT_INCLUDING_TAX_COL_ID,
 } from '../utils/globals';
 import { sortByCol } from '../utils/sort';
 
@@ -14,7 +23,7 @@ export const linesInitialState = {
     { id: 'nature', title: 'Nature', type: 'Text', required: true, width: '150px' },
     { id: VAT_TYPE_COL_ID, title: 'Type TVA', type: 'Select', required: true, width: '80px', defaultParamKey: PARAMETER_DEFAULT_CREDIT_TYPE },
     { id: VAT_RATE_COL_ID, title: 'TVA', type: 'Select', required: false, width: '50px', defaultParamKey: PARAMETER_DEFAULT_VAT },
-    { id: 'ht', title: 'Montant HT', type: 'Number', required: false, width: '100px' },
+    { id: AMOUNT_EXCLUDING_TAX_COL_ID, title: 'Montant HT', type: 'Number', required: false, width: '100px' },
     { id: 'ttc', title: 'Montant TTC', type: 'Number', required: true, width: '100px' },
     // eslint-disable-next-line max-len
     { id: 'mode', title: 'Mode', type: 'Select', required: false, width: '50px', defaultParamKey: PARAMETER_DEFAULT_CASHING },
@@ -57,9 +66,12 @@ export const linesReducer = ({
       break;
     case 'lineChange':
       newLines[action.lineNumber][action.col.id] = action.val;
-      if (action.col.id === 'ht') {
-        const vat = newLines[action.lineNumber].tva / 100;
-        newLines[action.lineNumber].ttc = Math.round(action.val * (1 + vat) * 100) / 100;
+      if (action.col.id === AMOUNT_EXCLUDING_TAX_COL_ID
+          || action.col.id === VAT_RATE_COL_ID) {
+        const vatRate = action.col.id === VAT_RATE_COL_ID ? action.val : newLines[action.lineNumber][VAT_RATE_COL_ID];
+        const exclTax = action.col.id === AMOUNT_EXCLUDING_TAX_COL_ID ? action.val : newLines[action.lineNumber][AMOUNT_EXCLUDING_TAX_COL_ID];
+        const vat = vatRate / 100;
+        newLines[action.lineNumber][AMOUNT_INCLUDING_TAX_COL_ID] = Math.round(exclTax * (1 + vat) * 100) / 100;
       }
       newUnsaved = true;
       break;
