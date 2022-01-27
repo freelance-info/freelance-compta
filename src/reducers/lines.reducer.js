@@ -13,9 +13,9 @@ export const linesInitialState = {
     { id: 'debit', title: 'Compte débité', type: 'Select', required: true, width: '80px', defaultParamKey: PARAMETER_DEFAULT_DEBIT_ACCOUNT },
     { id: 'nature', title: 'Nature', type: 'Text', required: true, width: '150px' },
     { id: VAT_TYPE_COL_ID, title: 'Type TVA', type: 'Select', required: true, width: '80px', defaultParamKey: PARAMETER_DEFAULT_CREDIT_TYPE },
+    { id: VAT_RATE_COL_ID, title: 'TVA', type: 'Select', required: false, width: '50px', defaultParamKey: PARAMETER_DEFAULT_VAT },
     { id: 'ht', title: 'Montant HT', type: 'Number', required: false, width: '100px' },
     { id: 'ttc', title: 'Montant TTC', type: 'Number', required: true, width: '100px' },
-    { id: VAT_RATE_COL_ID, title: 'TVA', type: 'Select', required: false, width: '50px', defaultParamKey: PARAMETER_DEFAULT_VAT },
     // eslint-disable-next-line max-len
     { id: 'mode', title: 'Mode', type: 'Select', required: false, width: '50px', defaultParamKey: PARAMETER_DEFAULT_CASHING },
     // eslint-disable-next-line max-len
