@@ -10,6 +10,8 @@ import FileButtons from './FileButtons';
 import { BottomButtons } from './BottomButtons';
 import { Table } from './Table';
 import { VAT } from './VAT';
+import { computeRowCellId } from '../utils/computations';
+import { SCROLLABLE_ELEMENT_ID } from '../utils/globals';
 
 // Account Ledger ("Livre des recettes" in french)
 const Main = ({ parameters, fileChange }) => {
@@ -85,7 +87,7 @@ const Main = ({ parameters, fileChange }) => {
 
   const addLine = () => {
     dispatchLinesAction({ type: 'addLine' });
-    setTimeout(() => scrollToBottom('#ledger-scrollable-container'), 200);
+    setTimeout(() => scrollToBottom(`#${SCROLLABLE_ELEMENT_ID}`), 200);
   };
 
   /** ******  SORT ********* */
@@ -119,7 +121,9 @@ const Main = ({ parameters, fileChange }) => {
       resolve();
     } else {
       setLineErrors(() => errorLines);
-      setTimeout(() => scrollTo('#ledger-scrollable-container', `#body-cell-${errorLines[0].lineNumber}-${theCols[0].id}`),
+      const theColId = theCols.find(col => col.width !== '0').id;
+      const colSelector = `#${computeRowCellId(errorLines[0].lineNumber, theColId)}`;
+      setTimeout(() => scrollTo(`#${SCROLLABLE_ELEMENT_ID}`, colSelector),
         200);
       reject(new Error('Enregistrement impossible, veuillez corriger les erreurs'));
     }
@@ -175,7 +179,7 @@ const Main = ({ parameters, fileChange }) => {
         {actionMessage && <Message type={actionMessage.type} message={actionMessage.message} />}
         <Search cols={cols} onChange={() => setSearchResults([])} onSearchClick={search} />
       </section>
-      <section id="ledger-scrollable-container" style={{ height: '75vh', overflow: 'auto' }}>
+      <section id={SCROLLABLE_ELEMENT_ID} style={{ height: '75vh', overflow: 'auto' }}>
         <Table
           key="account-ledger-table"
           cols={cols}

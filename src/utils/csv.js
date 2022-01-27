@@ -20,9 +20,12 @@ function fileExistsAndWritable(path) {
   });
 }
 
-export async function writeData(path, header, data) {
+export async function writeData(path, cols, data) {
   const createCsvWriter = window.require('csv-writer').createObjectCsvWriter;
-  const csvWriter = createCsvWriter({ path, header: header.map(col => ({ ...col, title: col.id })) });
+  const header = cols
+    .filter(col => col.width !== '0')
+    .map(col => ({ ...col, title: col.id }));
+  const csvWriter = createCsvWriter({ path, header });
   return csvWriter.writeRecords(data);
 }
 

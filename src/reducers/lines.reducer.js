@@ -5,18 +5,21 @@ import {
   PARAMETER_DEFAULT_CREDIT_ACCOUNT,
   PARAMETER_DEFAULT_CREDIT_TYPE,
   PARAMETER_KEYS,
-  UNIQUE_KEY_COL_ID,
+  INVOICE_NUMBER_COL_ID,
   VAT_TYPE_COL_ID, DATE_COL_ID,
   VAT_RATE_COL_ID,
   AMOUNT_EXCLUDING_TAX_COL_ID,
   AMOUNT_INCLUDING_TAX_COL_ID,
+  UNIQUE_KEY_COL_ID,
 } from '../utils/globals';
 import { sortByCol } from '../utils/sort';
+import { addLineId, addLinesId } from '../utils/computations';
 
 export const linesInitialState = {
   cols: [
+    { id: UNIQUE_KEY_COL_ID, title: 'Id', type: 'Text', required: true, width: '0' },
     { id: DATE_COL_ID, title: 'Date', type: 'Date', required: true, width: '150px' },
-    { id: UNIQUE_KEY_COL_ID, title: 'Réf. de la facture', type: 'Text', required: false, width: '75px' },
+    { id: INVOICE_NUMBER_COL_ID, title: 'Réf. de la facture', type: 'Text', required: false, width: '75px' },
     { id: 'client', title: 'Client', type: 'Text', required: false, width: '100px' },
     // eslint-disable-next-line max-len
     { id: 'debit', title: 'Compte débité', type: 'Select', required: true, width: '80px', defaultParamKey: PARAMETER_DEFAULT_DEBIT_ACCOUNT },
@@ -59,7 +62,7 @@ export const linesReducer = ({
       }
       break;
     case 'initLines':
-      newLines = [...action.initLines];
+      newLines = addLinesId(action.initLines);
       sortByCol(newLines, DATE_COL_ID);
       newHighlightedLines = [];
       newSelectedLines = [];
@@ -76,8 +79,12 @@ export const linesReducer = ({
       newUnsaved = true;
       break;
     case 'addLine':
-      newLines.push({});
-      cols.forEach(col => { newLines[newLines.length - 1][col.id] = col.defaultValue; });
+      newLines.push(addLineId({}));
+      cols.forEach(col => {
+        if (col.defaultValue) {
+          newLines[newLines.length - 1][col.id] = col.defaultValue;
+        }
+      });
       newHighlightedLines.push(newLines.length - 1);
       newSelectedLines = [];
       newUnsaved = true;
@@ -110,7 +117,7 @@ export const linesReducer = ({
     case 'duplicateSelected':
       lines.forEach((line, index) => {
         if (selectedLines.some(idx => index === idx)) {
-          newLines.push({ ...line });
+          newLines.push(addLineId({ ...line }));
           newHighlightedLines.push(newLines.length - 1);
         }
       });

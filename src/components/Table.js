@@ -7,28 +7,23 @@ import { Row } from './Row';
 import { computeTotals } from '../utils/computations';
 import { UNIQUE_KEY_COL_ID } from '../utils/globals';
 
-const buildLineUniqueKey = (lines, line, lineNumber) => {
-  const duplicatedKeys = lines.map((l, lNumber) => ({ l, lNumber }))
-    .filter(({ lNumber }) => lNumber < lineNumber)
-    .filter(({ l }) => l[UNIQUE_KEY_COL_ID] === line[UNIQUE_KEY_COL_ID]);
-  return `${line[UNIQUE_KEY_COL_ID]}-${duplicatedKeys.length}`;
-};
-
 export const Table = ({
   cols, lines, rowChange, selectedLines, allSelected, select, selectAll, highlightedLines, sort, onSort, errors,
 }) => {
-  const headerCells = cols.map(col => (
-    <HeaderCell
-      key={`header-cell-${col.id}`}
-      col={col}
-      sort={sort}
-      onSort={onSort}
-    />
-  ));
+  const headerCells = cols
+    .filter(col => col.width !== '0')
+    .map(col => (
+      <HeaderCell
+        key={`header-cell-${col.id}`}
+        col={col}
+        sort={sort}
+        onSort={onSort}
+      />
+    ));
 
   const rows = lines.map((line, lineNumber) => (
     <Row
-      key={buildLineUniqueKey(lines, line, lineNumber)}
+      key={`row-${line[UNIQUE_KEY_COL_ID]}`}
       cols={cols}
       line={line}
       lineNumber={lineNumber}
@@ -41,9 +36,15 @@ export const Table = ({
   ));
 
   const computedTotals = computeTotals(lines, cols);
-  const footerCells = cols.map(col => (
-    <FooterCell key={`footer-cell-${col.id}`} col={col} computedTotals={computedTotals} />
-  ));
+  const footerCells = cols
+    .filter(col => col.width !== '0')
+    .map(col => (
+      <FooterCell
+        key={`footer-cell-${col.id}`}
+        col={col}
+        computedTotals={computedTotals}
+      />
+    ));
 
   return (
     <table className="ui table small compact brown sortable">

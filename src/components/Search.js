@@ -6,7 +6,9 @@ const Search = ({ cols, onChange, onSearchClick }) => {
   const [searchOption, setSearchOption] = useState(cols[0].id);
   const [searchText, setSearchText] = useState(undefined);
 
-  const searchOptions = cols.map(col => ({ key: col.id, text: col.title, value: col.id }));
+  const searchOptions = cols
+    .filter(col => col.width !== '0')
+    .map(col => ({ key: col.id, text: col.title, value: col.id }));
 
   return (
     <Input

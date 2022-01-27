@@ -2,10 +2,13 @@ import React from 'react';
 import { PropTypes, shape, string } from 'prop-types';
 import { Checkbox } from 'semantic-ui-react';
 import CellEdit from './CellEdit';
+import { UNIQUE_KEY_COL_ID } from '../utils/globals';
+import { computeRowCellId } from '../utils/computations';
 
 export const Row = ({
   cols, line, lineNumber, errors, highlightedLines, selectedLines, select, rowChange,
 }) => {
+  const lineId = line[UNIQUE_KEY_COL_ID];
   // Return error message to display if any for given line / column
   const getErrorMsg = (lineNum, errorLines, col) => {
     const error = errorLines.filter(err => err.lineNumber === lineNum);
@@ -18,36 +21,38 @@ export const Row = ({
     return '';
   };
 
-  const td = cols.map(col => {
-    const key = `body-cell-${lineNumber}-${col.id}`;
-    const errorMsg = getErrorMsg(lineNumber, errors, col);
-    return (
-      <td key={key} id={key} className={errorMsg ? 'error' : ''}>
-        {
-          rowChange
-          && (
-          <CellEdit
-            key={`cell-edit-${key}`}
-            id={`cell-edit-${key}`}
-            def={col}
-            value={line[col.id]}
-            onChange={val => rowChange(lineNumber, col, val)}
-          />
-          )
-        }
-        {errorMsg || ''}
-      </td>
-    );
-  });
+  const td = cols
+    .filter(col => col.width !== '0')
+    .map(col => {
+      const key = `row-cell-${lineId}-${col.id}`;
+      const id = computeRowCellId(lineNumber, col.id);
+      const errorMsg = getErrorMsg(lineNumber, errors, col);
+      return (
+        <td key={key} id={id} className={errorMsg ? 'error' : ''}>
+          {
+            rowChange
+            && (
+            <CellEdit
+              lineId={lineId}
+              def={col}
+              value={line[col.id]}
+              onChange={val => rowChange(lineNumber, col, val)}
+            />
+            )
+          }
+          {errorMsg || ''}
+        </td>
+      );
+    });
   return (
     <tr
-      key={`body-line-${lineNumber}`}
+      key={`body-line-${lineId}`}
       className={highlightedLines.includes(lineNumber) ? 'positive' : ''}
     >
       {
         select
         && (
-        <td key={`body-check-${lineNumber}`}>
+        <td key={`body-check-${lineId}`}>
           <Checkbox
             checked={selectedLines.some(selectedLine => selectedLine === lineNumber)}
             onChange={(e, { checked }) => select(lineNumber, checked)}

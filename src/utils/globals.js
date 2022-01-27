@@ -4,7 +4,8 @@ export const PARAMETER_DEFAULT_CASHING = "Mode d'encaissement par défaut";
 export const PARAMETER_DEFAULT_DEBIT_ACCOUNT = 'Compte à débiter par défaut';
 export const PARAMETER_DEFAULT_CREDIT_ACCOUNT = 'Compte à créditer par défaut';
 export const PARAMETER_DEFAULT_CREDIT_TYPE = 'Type de recette pour la TVA par défaut';
-export const UNIQUE_KEY_COL_ID = 'ref';
+export const UNIQUE_KEY_COL_ID = 'id';
+export const INVOICE_NUMBER_COL_ID = 'ref';
 export const DATE_COL_ID = 'date';
 export const VAT_TYPE_COL_ID = 'typeTva';
 export const VAT_RATE_COL_ID = 'tva';
@@ -85,3 +86,5 @@ PARAMETER_KEYS.set(PARAMETER_DEFAULT_DEBIT_ACCOUNT, [
 ]);
 PARAMETER_KEYS.set(PARAMETER_DEFAULT_CREDIT_ACCOUNT, null);
 PARAMETER_KEYS.set(PARAMETER_DEFAULT_CREDIT_TYPE, CREDIT_TYPES.map(({ key, text, value }) => ({ key, text, value })));
+
+export const SCROLLABLE_ELEMENT_ID = 'ledger-scrollable-container';

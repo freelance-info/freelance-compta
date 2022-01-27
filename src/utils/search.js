@@ -1,6 +1,7 @@
-import { DATE_COL_ID } from './globals';
+import { SCROLLABLE_ELEMENT_ID, DATE_COL_ID } from './globals';
 import { scrollTo } from './scroll';
 import { parseDate } from './date';
+import { computeRowCellId } from './computations';
 
 export const searchLines = (lines, searchText, searchColId, searchResults) => {
   let newSearchResults;
@@ -30,9 +31,9 @@ export const searchLines = (lines, searchText, searchColId, searchResults) => {
   document.querySelectorAll('input').forEach(input => { input.style.backgroundColor = 'transparent'; });
   if (newSearchResults.length > 0) {
     const lineIndex = newSearchResults.shift();
-    const cellId = `#body-cell-${lineIndex}-${searchColId}`;
-    scrollTo('#ledger-scrollable-container', cellId);
-    document.querySelector(cellId).querySelector('input').style.backgroundColor = 'yellow';
+    const cellId = computeRowCellId(lineIndex, searchColId);
+    scrollTo(`#${SCROLLABLE_ELEMENT_ID}`, `#${cellId}`);
+    document.querySelector(`#${cellId}`).querySelector('input').style.backgroundColor = 'yellow';
   }
   return newSearchResults;
 };
