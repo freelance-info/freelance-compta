@@ -9,7 +9,7 @@ extraMetadata:
   main: build/electron.js
 asarUnpack:
   - public/**
-artifactName: '${productName}.${ext}'
+artifactName: ${productName}.${ext}
 win:
   publisherName: github.com/freelance-info
   target: portable
