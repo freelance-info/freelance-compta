@@ -1,13 +1,15 @@
-import React from 'react';
-import { PropTypes, shape, string } from 'prop-types';
+import React, { useContext } from 'react';
+import { PropTypes, shape } from 'prop-types';
 import { Checkbox } from 'semantic-ui-react';
 import CellEdit from './CellEdit';
 import { UNIQUE_KEY_COL_ID } from '../utils/globals';
 import { computeRowCellId } from '../utils/computations';
+import { LinesContext } from '../contexts/lines.context';
 
 export const Row = ({
-  cols, line, lineNumber, errors, highlightedLines, selectedLines, select, rowChange,
+  line, lineNumber, errors, select, rowChange,
 }) => {
+  const [{ cols, selectedLines, highlightedLines }] = useContext(LinesContext);
   const lineId = line[UNIQUE_KEY_COL_ID];
   // Return error message to display if any for given line / column
   const getErrorMsg = (lineNum, errorLines, col) => {
@@ -66,14 +68,6 @@ export const Row = ({
 };
 
 Row.propTypes = {
-  cols: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      type: string.isRequired,
-      title: string.isRequired,
-      width: string,
-    }),
-  ).isRequired,
   // eslint-disable-next-line react/forbid-prop-types
   line: PropTypes.object.isRequired,
   lineNumber: PropTypes.number.isRequired,
@@ -81,16 +75,12 @@ Row.propTypes = {
     col: shape({ id: PropTypes.string.isRequired }),
     lineNumber: PropTypes.number.isRequired,
   })),
-  highlightedLines: PropTypes.arrayOf(PropTypes.number),
-  selectedLines: PropTypes.arrayOf(PropTypes.number),
   select: PropTypes.func,
   rowChange: PropTypes.func,
 };
 
 Row.defaultProps = {
   errors: [],
-  highlightedLines: [],
-  selectedLines: [],
   select: () => {},
   rowChange: () => {},
 };

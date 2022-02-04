@@ -7,12 +7,7 @@ import {
   node,
 } from 'prop-types';
 
-const CellEdit = ({
-  lineId,
-  def,
-  value,
-  onChange,
-}) => {
+const CellEdit = ({ lineId, def, value, onChange }) => {
   const theValue = value === null || value === undefined ? def.defaultValue : value;
   const divStyle = { minWidth: def.width };
   const key = `input-${def.id}-${lineId}`;

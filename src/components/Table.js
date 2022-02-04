@@ -1,23 +1,48 @@
-import React from 'react';
-import { PropTypes, shape, string } from 'prop-types';
+import React, { useContext, useState } from 'react';
+import { PropTypes, shape } from 'prop-types';
 import { Checkbox } from 'semantic-ui-react';
 import { HeaderCell } from './HeaderCell';
 import { FooterCell } from './FooterCell';
 import { Row } from './Row';
 import { computeTotals } from '../utils/computations';
 import { UNIQUE_KEY_COL_ID } from '../utils/globals';
+import { LinesContext } from '../contexts/lines.context';
 
-export const Table = ({
-  cols, lines, rowChange, selectedLines, allSelected, select, selectAll, highlightedLines, sort, onSort, errors,
-}) => {
+export const Table = ({ allSelected, errors }) => {
+  const [{ cols, lines, selectedLines, highlightedLines }, dispatchLinesAction] = useContext(LinesContext);
+
+  const [sortState, setSortState] = useState({ column: 'date', direction: 'ascending' });
+  const handleSort = clickedColumn => {
+    const { column, direction } = sortState;
+    const newDirection = column === clickedColumn && direction === 'ascending' ? 'descending' : 'ascending';
+    setSortState({ column: clickedColumn, direction: newDirection });
+    dispatchLinesAction({ type: 'sortLines', clickedColumn, direction: newDirection });
+  };
+
+  const rowChange = (lineNumber, col, val) => {
+    dispatchLinesAction({ type: 'lineChange', lineNumber, col, val });
+  };
+
+  const selectAll = checked => {
+    if (checked) {
+      dispatchLinesAction({ type: 'selectAll' });
+    } else {
+      dispatchLinesAction({ type: 'unselectAll' });
+    }
+  };
+
+  const select = (lineNumber, checked) => {
+    dispatchLinesAction({ type: 'select', checked, lineNumber });
+  };
+
   const headerCells = cols
     .filter(col => col.width !== '0')
     .map(col => (
       <HeaderCell
         key={`header-cell-${col.id}`}
         col={col}
-        sort={sort}
-        onSort={onSort}
+        sort={sortState}
+        onSort={handleSort}
       />
     ));
 
@@ -78,26 +103,7 @@ export const Table = ({
 };
 
 Table.propTypes = {
-  cols: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      type: string.isRequired,
-      title: string.isRequired,
-      width: string,
-    }),
-  ).isRequired,
-  lines: PropTypes.arrayOf(PropTypes.object).isRequired,
-  rowChange: PropTypes.func,
-  highlightedLines: PropTypes.arrayOf(PropTypes.number),
-  selectedLines: PropTypes.arrayOf(PropTypes.number),
-  select: PropTypes.func,
   allSelected: PropTypes.bool,
-  selectAll: PropTypes.func,
-  sort: shape({
-    column: PropTypes.string,
-    direction: PropTypes.string,
-  }),
-  onSort: PropTypes.func,
   errors: PropTypes.arrayOf(PropTypes.shape({
     col: shape({ id: PropTypes.string.isRequired }),
     lineNumber: PropTypes.number.isRequired,
@@ -106,15 +112,5 @@ Table.propTypes = {
 
 Table.defaultProps = {
   errors: [],
-  highlightedLines: [],
-  selectedLines: [],
-  select: () => {},
-  rowChange: () => {},
-  sort: {
-    column: null,
-    direction: null,
-  },
-  onSort: () => {},
   allSelected: false,
-  selectAll: () => {},
 };

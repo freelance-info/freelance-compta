@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect, useReducer, useMemo } from 'react';
 import { instanceOf, func } from 'prop-types';
 import { searchLines } from '../utils/search';
 import { open, saveAs, save, readData } from '../utils/csv';
@@ -12,12 +12,13 @@ import { Table } from './Table';
 import { VAT } from './VAT';
 import { computeRowCellId } from '../utils/computations';
 import { SCROLLABLE_ELEMENT_ID } from '../utils/globals';
+import { LinesContext } from '../contexts/lines.context';
 
 // Account Ledger ("Livre des recettes" in french)
 const Main = ({ parameters, fileChange }) => {
   const [actionMessage, setActionMessage] = useState(undefined);
 
-  // Column metadata definition
+  // COLUMN DEFINITION
   const storedCurrentFile = localStorage.getItem('accountLedger');
   const [currentFile, setCurrentFile] = useState(undefined);
   const [showVat, setShowVat] = useState(false);
@@ -28,38 +29,23 @@ const Main = ({ parameters, fileChange }) => {
     cols,
     unsaved,
   }, dispatchLinesAction] = useReducer(linesReducer, linesInitialState);
-
-  /** ****** SELECTED LINES ACTIONS  */
-  const selectAll = checked => {
-    if (checked) {
-      dispatchLinesAction({ type: 'selectAll' });
-    } else {
-      dispatchLinesAction({ type: 'unselectAll' });
-    }
-  };
-
-  const select = (lineNumber, checked) => {
-    dispatchLinesAction({ type: 'select', checked, lineNumber });
-  };
-
-  const removeLines = () => {
-    dispatchLinesAction({ type: 'removeSelected' });
-  };
-
-  const duplicateLines = () => {
-    dispatchLinesAction({ type: 'duplicateSelected' });
-  };
+  const linesContextValue = useMemo(() => ([{
+    selectedLines,
+    highlightedLines,
+    lines,
+    cols,
+    unsaved,
+  }, dispatchLinesAction]), [selectedLines, highlightedLines, lines, cols, unsaved, dispatchLinesAction]);
 
   const vat = () => {
     setShowVat(true);
   };
-  /** ******************* */
 
   useEffect(() => {
     dispatchLinesAction({ type: 'initCols', parameters });
   }, [parameters]);
 
-  // Read data from file
+  // FILES
   useEffect(() => {
     if (!currentFile) {
       if (storedCurrentFile) {
@@ -81,25 +67,12 @@ const Main = ({ parameters, fileChange }) => {
     }
   }, [currentFile]);
 
-  const rowChange = (lineNumber, col, val) => {
-    dispatchLinesAction({ type: 'lineChange', lineNumber, col, val });
-  };
-
   const addLine = () => {
     dispatchLinesAction({ type: 'addLine' });
     setTimeout(() => scrollToBottom(`#${SCROLLABLE_ELEMENT_ID}`), 200);
   };
 
-  /** ******  SORT ********* */
-  const [sortState, setSortState] = useState({ column: 'date', direction: 'ascending' });
-  const handleSort = clickedColumn => {
-    const { column, direction } = sortState;
-    const newDirection = column === clickedColumn && direction === 'ascending' ? 'descending' : 'ascending';
-    setSortState({ column: clickedColumn, direction: newDirection });
-    dispatchLinesAction({ type: 'sortLines', clickedColumn, direction: newDirection });
-  };
-
-  /** ******* ERRORS **** */
+  // ERRORS
   const [lineErrors, setLineErrors] = useState([]);
 
   // Return error object if any for given line
@@ -123,22 +96,19 @@ const Main = ({ parameters, fileChange }) => {
       setLineErrors(() => errorLines);
       const theColId = theCols.find(col => col.width !== '0').id;
       const colSelector = `#${computeRowCellId(errorLines[0].lineNumber, theColId)}`;
-      setTimeout(() => scrollTo(`#${SCROLLABLE_ELEMENT_ID}`, colSelector),
-        200);
+      setTimeout(() => scrollTo(`#${SCROLLABLE_ELEMENT_ID}`, colSelector), 200);
       reject(new Error('Enregistrement impossible, veuillez corriger les erreurs'));
     }
   });
 
-  /** ****** SEARCH ********* */
+  // SEARCH
   const [searchResults, setSearchResults] = useState(undefined);
-
   // Search the given col for text, then scroll to it
   const search = (searchText, searchColId) => {
     setSearchResults(searchLines(lines, searchText, searchColId, searchResults));
   };
-  /** *************** */
 
-  /** ********* FILES *************** */
+  // FILES
   const onNew = () => {
     localStorage.removeItem('accountLedger');
     setCurrentFile(null);
@@ -146,19 +116,18 @@ const Main = ({ parameters, fileChange }) => {
     fileChange(null);
     dispatchLinesAction({ type: 'initLines', initLines: [] });
   };
-
   const onOpen = () => {
     open(currentFile, setCurrentFile, fileChange, setActionMessage, lines, cols)
       .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }))
       .catch(err => setActionMessage({ type: 'negative', message: err.message ?? err }));
   };
-
-  const onSaveAs = () => checkErrors(lines, cols)
-    .then(() => saveAs(currentFile, setCurrentFile, fileChange, lines, cols, setActionMessage))
-    .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }))
-    .then(() => dispatchLinesAction({ type: 'saved' }))
-    .catch(err => setActionMessage({ type: 'negative', message: err.message ?? err }));
-
+  const onSaveAs = () => {
+    checkErrors(lines, cols)
+      .then(() => saveAs(currentFile, setCurrentFile, fileChange, lines, cols, setActionMessage))
+      .then(initLines => dispatchLinesAction({ type: 'initLines', initLines }))
+      .then(() => dispatchLinesAction({ type: 'saved' }))
+      .catch(err => setActionMessage({ type: 'negative', message: err.message ?? err }));
+  };
   const onSave = () => {
     if (currentFile) {
       checkErrors(lines, cols)
@@ -173,41 +142,32 @@ const Main = ({ parameters, fileChange }) => {
   };
 
   return (
-    <article>
-      <section className="buttons-bar border-bottom">
-        <FileButtons hasUnsavedChanges={unsaved} onNew={onNew} onOpen={onOpen} onSave={onSave} onSaveAs={onSaveAs} />
-        {actionMessage && <Message type={actionMessage.type} message={actionMessage.message} />}
-        <Search cols={cols} onChange={() => setSearchResults([])} onSearchClick={search} />
-      </section>
-      <section id={SCROLLABLE_ELEMENT_ID} style={{ height: '75vh', overflow: 'auto' }}>
-        <Table
-          key="account-ledger-table"
-          cols={cols}
-          lines={lines}
-          rowChange={rowChange}
-          selectedLines={selectedLines}
-          select={select}
-          allSelected={selectedLines.length > 0 && selectedLines.length === lines.length}
-          selectAll={selectAll}
-          highlightedLines={highlightedLines}
-          sort={sortState}
-          onSort={handleSort}
-          errors={lineErrors}
-        />
-      </section>
-      <section className="buttons-bar border-top">
-        <BottomButtons
-          hasSelectedLines={selectedLines.length > 0}
-          addLine={addLine}
-          removeLines={removeLines}
-          duplicateLines={duplicateLines}
-          vat={vat}
-        />
-      </section>
-      {
-        showVat && <VAT open={showVat} setOpen={setShowVat} cols={cols} lines={lines} />
-      }
-    </article>
+    <LinesContext.Provider value={linesContextValue}>
+      <article>
+
+        <section className="buttons-bar border-bottom">
+          <FileButtons hasUnsavedChanges={unsaved} onNew={onNew} onOpen={onOpen} onSave={onSave} onSaveAs={onSaveAs} />
+          {actionMessage && <Message type={actionMessage.type} message={actionMessage.message} />}
+          <Search cols={cols} onChange={() => setSearchResults([])} onSearchClick={search} />
+        </section>
+
+        <section id={SCROLLABLE_ELEMENT_ID} style={{ height: '75vh', overflow: 'auto' }}>
+          <Table
+            key="account-ledger-table"
+            allSelected={selectedLines.length > 0 && selectedLines.length === lines.length}
+            errors={lineErrors}
+          />
+        </section>
+
+        <section className="buttons-bar border-top">
+          <BottomButtons addLine={addLine} vat={vat} />
+        </section>
+
+        {
+          showVat && <VAT open={showVat} setOpen={setShowVat} cols={cols} lines={lines} />
+        }
+      </article>
+    </LinesContext.Provider>
   );
 };
 

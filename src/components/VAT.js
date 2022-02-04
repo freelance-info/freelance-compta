@@ -2,19 +2,25 @@
 /* eslint-disable max-len */
 
 // Value-Added Tax (TVA in french)
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import {
-  func, bool, arrayOf, string, shape, any,
-} from 'prop-types';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useContext,
+} from 'react';
+import { func, bool } from 'prop-types';
 import { Button, Form, Modal } from 'semantic-ui-react';
 import {
   CREDIT_TYPES, DATE_COL_ID, VAT_TYPE_COL_ID, VAT_RATES, VAT_RATE_COL_ID, AMOUNT_EXCLUDING_TAX_COL_ID,
 } from '../utils/globals';
 import { Table } from './Table';
 import { getQuarters, getStartDateOfQuarter, getEndDateOfQuarter } from '../utils/date';
+import { LinesContext } from '../contexts/lines.context';
 import VAT_SVG from './VAT.svg';
 
-export const VAT = ({ open, setOpen, lines, cols }) => {
+export const VAT = ({ open, setOpen }) => {
+  const [{ cols, lines }] = useContext(LinesContext);
   const reportingCols = cols.filter(col => !['ref', 'debit', 'credit', 'mode'].includes(col.id));
 
   const [startQuarter, setStartQuarter] = useState(null);
@@ -182,21 +188,9 @@ export const VAT = ({ open, setOpen, lines, cols }) => {
 VAT.propTypes = {
   open: bool,
   setOpen: func,
-  // eslint-disable-next-line react/forbid-prop-types
-  lines: arrayOf(any),
-  cols: arrayOf(
-    shape({
-      id: string.isRequired,
-      type: string.isRequired,
-      title: string.isRequired,
-      width: string,
-    }),
-  ),
 };
 
 VAT.defaultProps = {
   open: false,
   setOpen: () => { },
-  lines: [],
-  cols: [],
 };
