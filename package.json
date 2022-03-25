@@ -51,7 +51,7 @@
   ],
   "devDependencies": {
     "concurrently": "^5.1.0",
-    "electron": "^11.5.0",
+    "electron": "^13.6.6",
     "electron-builder": "^22.3.2",
     "eslint": "7.11.0",
     "eslint-config-airbnb": "^18.2.0",
