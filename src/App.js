@@ -73,7 +73,7 @@ class App extends React.Component {
       if (tabFile) {
         return (
           <Menu.Item key={tabFile} title={tabFile}>
-            { new URL(tabFile).pathname.split('/').pop()}
+            { new URL(`file:///${tabFile}`).pathname.split('/').pop() }
           </Menu.Item>
         );
       }
