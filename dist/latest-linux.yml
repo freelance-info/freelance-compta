@@ -1,9 +1,9 @@
-version: 0.1.1
+version: 0.2.2
 files:
-  - url: compta.AppImage
-    sha512: AfOK3dnJ8w36CHx2By3y4JMO58L0uTRPso+8RDESKpAxsoH3ZjqsNa6ogCw0V0lNhN4oheAddyT84Q0S/IWQjA==
-    size: 109384992
-    blockMapSize: 116020
-path: compta.AppImage
-sha512: AfOK3dnJ8w36CHx2By3y4JMO58L0uTRPso+8RDESKpAxsoH3ZjqsNa6ogCw0V0lNhN4oheAddyT84Q0S/IWQjA==
-releaseDate: '2020-12-10T21:24:24.007Z'
+  - url: freelance_compta.AppImage
+    sha512: zC3Uol9ltBGnSbB6l84Nf1whAnYIVzfcHVQFaS9z9OeTehEEaM7ro9ztobGHQRkhbr920Ee5cfgrtRFvIE51bA==
+    size: 118751922
+    blockMapSize: 123590
+path: freelance_compta.AppImage
+sha512: zC3Uol9ltBGnSbB6l84Nf1whAnYIVzfcHVQFaS9z9OeTehEEaM7ro9ztobGHQRkhbr920Ee5cfgrtRFvIE51bA==
+releaseDate: '2022-04-01T19:12:14.595Z'
